@@ -4,18 +4,7 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 import { JWT_SECRET } from "./utils/config";
 import client from "@repo/db/client";
 
-function getRandomString(length: number) {
-  const characters =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  let result = "";
-  for (let i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * characters.length));
-  }
-  return result;
-}
-
 export class User {
-  public id: string;
   public userId?: string;
   private spaceId?: string;
   private x: number;
@@ -23,7 +12,6 @@ export class User {
   private ws: WebSocket;
 
   constructor(ws: WebSocket) {
-    this.id = getRandomString(10);
     this.x = 0;
     this.y = 0;
     this.ws = ws;
@@ -33,6 +21,8 @@ export class User {
   init() {
     this.ws.on("message", async (data) => {
       const parsedData = JSON.parse(data.toString());
+
+      console.log("Received message", parsedData);
 
       switch (parsedData.type) {
         case "join":
@@ -72,10 +62,16 @@ export class User {
                 x: this.x,
                 y: this.y,
               },
+              userId: this.userId,
               users:
                 RoomManager.getInstance()
                   .rooms.get(spaceId)!
-                  .map((u) => ({ id: u.id })) ?? [],
+                  .filter((u) => u.userId !== this.userId)
+                  .map((u) => ({
+                    x: u.x,
+                    y: u.y,
+                    id: u.userId,
+                  })) ?? [],
             },
           });
 
@@ -98,6 +94,7 @@ export class User {
             Math.abs(this.y - moveY) > 1 ||
             (Math.abs(this.x - moveX) === 1 && Math.abs(this.y - moveY) === 1)
           ) {
+            console.log("Invalid move", this.x, this.y, moveX, moveY);
             this.send({
               type: "movement-rejected",
               payload: {

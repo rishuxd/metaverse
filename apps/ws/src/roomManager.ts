@@ -30,7 +30,7 @@ export class RoomManager {
 
     this.rooms.set(
       roomId,
-      this.rooms.get(roomId)?.filter((u) => u.id !== user.id) ?? []
+      this.rooms.get(roomId)?.filter((u) => u.userId !== user.userId) ?? []
     );
   }
 
@@ -41,7 +41,7 @@ export class RoomManager {
 
     const users = this.rooms.get(roomId)!;
     users.forEach((u) => {
-      if (u.id !== user.id) {
+      if (u.userId !== user.userId) {
         u.send(data);
       }
     });
