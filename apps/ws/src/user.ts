@@ -1,8 +1,20 @@
+// user.ts
 import { WebSocket } from "ws";
 import { RoomManager } from "./roomManager";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { JWT_SECRET } from "./utils/config";
 import client from "@repo/db/client";
+
+interface WebRTCMessage {
+  type: "webrtc-offer" | "webrtc-answer" | "webrtc-ice-candidate";
+  payload: {
+    targetUserId: string;
+    offer?: RTCSessionDescriptionInit;
+    answer?: RTCSessionDescriptionInit;
+    candidate?: RTCIceCandidateInit;
+    from?: string;
+  };
+}
 
 export class User {
   public userId?: string;
@@ -21,108 +33,162 @@ export class User {
   init() {
     this.ws.on("message", async (data) => {
       const parsedData = JSON.parse(data.toString());
-
       console.log("Received message", parsedData);
 
       switch (parsedData.type) {
         case "join":
-          const spaceId = parsedData.payload.spaceId;
-          const token = parsedData.payload.token;
-
-          const space = await client.space.findUnique({
-            where: {
-              id: spaceId,
-            },
-          });
-
-          if (!space) {
-            this.ws.close();
-            return;
-          }
-
-          const userId = (jwt.verify(token, JWT_SECRET) as JwtPayload).id;
-          if (!userId) {
-            this.ws.close();
-            return;
-          }
-
-          this.userId = userId;
-          this.spaceId = spaceId;
-
-          RoomManager.getInstance().addUserToRoom(spaceId, this);
-
-          // We need to get the right spawn point for the user based on the existing users and space elements
-          this.x = Math.floor(Math.random() * space?.width);
-          this.y = Math.floor(Math.random() * space?.height);
-
-          this.send({
-            type: "space-joined",
-            payload: {
-              spawn: {
-                x: this.x,
-                y: this.y,
-              },
-              userId: this.userId,
-              users:
-                RoomManager.getInstance()
-                  .rooms.get(spaceId)!
-                  .filter((u) => u.userId !== this.userId)
-                  .map((u) => ({
-                    x: u.x,
-                    y: u.y,
-                    id: u.userId,
-                  })) ?? [],
-            },
-          });
-
-          RoomManager.getInstance().broadcastToRoom(spaceId, this, {
-            type: "user-joined",
-            payload: {
-              userId: this.userId,
-              x: this.x,
-              y: this.y,
-            },
-          });
+          await this.handleJoin(parsedData.payload);
           break;
 
         case "move":
-          const moveX = parsedData.payload.x;
-          const moveY = parsedData.payload.y;
-
-          if (
-            Math.abs(this.x - moveX) > 1 ||
-            Math.abs(this.y - moveY) > 1 ||
-            (Math.abs(this.x - moveX) === 1 && Math.abs(this.y - moveY) === 1)
-          ) {
-            console.log("Invalid move", this.x, this.y, moveX, moveY);
-            this.send({
-              type: "movement-rejected",
-              payload: {
-                x: this.x,
-                y: this.y,
-              },
-            });
-            return;
-          }
-
-          this.x = moveX;
-          this.y = moveY;
-
-          RoomManager.getInstance().broadcastToRoom(this.spaceId!, this, {
-            type: "movement",
-            payload: {
-              x: this.x,
-              y: this.y,
-              userId: this.userId,
-            },
-          });
+          this.handleMove(parsedData.payload);
           break;
 
+        case "webrtc-offer":
+          this.handleWebRTCOffer(parsedData as WebRTCMessage);
+          break;
+
+        case "webrtc-answer":
+          this.handleWebRTCAnswer(parsedData as WebRTCMessage);
+          break;
+
+        case "webrtc-ice-candidate":
+          this.handleWebRTCIceCandidate(parsedData as WebRTCMessage);
+          break;
+
+        case "media-state-update":
+          this.handleMediaStateUpdate(parsedData.payload);
+          break;
         default:
           console.log("Unknown message type", parsedData.type);
           break;
       }
     });
+  }
+
+  private handleMediaStateUpdate(payload: any) {
+    RoomManager.getInstance().broadcastToRoom(this.spaceId!, this, {
+      type: "media-state-update",
+      payload,
+    });
+  }
+
+  private async handleJoin(payload: { spaceId: string; token: string }) {
+    const space = await client.space.findUnique({
+      where: {
+        id: payload.spaceId,
+      },
+    });
+
+    if (!space) {
+      this.ws.close();
+      return;
+    }
+
+    const userId = (jwt.verify(payload.token, JWT_SECRET) as JwtPayload).id;
+    if (!userId) {
+      this.ws.close();
+      return;
+    }
+
+    this.userId = userId;
+    this.spaceId = payload.spaceId;
+
+    RoomManager.getInstance().addUserToRoom(payload.spaceId, this);
+
+    this.x = Math.floor(Math.random() * space?.width);
+    this.y = Math.floor(Math.random() * space?.height);
+
+    this.send({
+      type: "space-joined",
+      payload: {
+        spawn: {
+          x: this.x,
+          y: this.y,
+        },
+        userId: this.userId,
+        users:
+          RoomManager.getInstance()
+            .rooms.get(payload.spaceId)!
+            .filter((u) => u.userId !== this.userId)
+            .map((u) => ({
+              x: u.x,
+              y: u.y,
+              userId: u.userId,
+            })) ?? [],
+      },
+    });
+
+    RoomManager.getInstance().broadcastToRoom(payload.spaceId, this, {
+      type: "user-joined",
+      payload: {
+        userId: this.userId,
+        x: this.x,
+        y: this.y,
+      },
+    });
+  }
+
+  private handleMove(payload: { x: number; y: number }) {
+    this.x = payload.x;
+    this.y = payload.y;
+
+    RoomManager.getInstance().broadcastToRoom(this.spaceId!, this, {
+      type: "movement",
+      payload: {
+        x: this.x,
+        y: this.y,
+        userId: this.userId,
+      },
+    });
+  }
+
+  private handleWebRTCOffer(message: WebRTCMessage) {
+    const targetUser = RoomManager.getInstance()
+      .rooms.get(this.spaceId!)
+      ?.find((user) => user.userId === message.payload.targetUserId);
+
+    if (targetUser) {
+      targetUser.send({
+        type: "webrtc-offer",
+        payload: {
+          offer: message.payload.offer,
+          from: this.userId,
+        },
+      });
+    }
+  }
+
+  private handleWebRTCAnswer(message: WebRTCMessage) {
+    const targetUser = RoomManager.getInstance()
+      .rooms.get(this.spaceId!)
+      ?.find((user) => user.userId === message.payload.targetUserId);
+
+    if (targetUser) {
+      targetUser.send({
+        type: "webrtc-answer",
+        payload: {
+          answer: message.payload.answer,
+          from: this.userId,
+        },
+      });
+    }
+  }
+
+  private handleWebRTCIceCandidate(message: WebRTCMessage) {
+    const targetUser = RoomManager.getInstance()
+      .rooms.get(this.spaceId!)
+      ?.find((user) => user.userId === message.payload.targetUserId);
+
+    if (targetUser) {
+      targetUser.send({
+        type: "webrtc-ice-candidate",
+        payload: {
+          candidate: message.payload.candidate,
+          from: this.userId,
+        },
+      });
+    }
   }
 
   destroy() {
