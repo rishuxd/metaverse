@@ -5,20 +5,19 @@ import ApiError from "../../utils/apiError";
 
 const getAllSpace = async (req: Request, res: Response): Promise<void> => {
   try {
+    console.log("getAllSpace");
     const spaces = await client.space.findMany({
       where: {
         creatorId: req.user?.id,
+      },
+      include: {
+        map: true,
       },
     });
 
     res.json(
       new ApiResponse(200, "Spaces fetched successfully", {
-        spaces: spaces.map((s) => ({
-          id: s.id,
-          name: s.name,
-          thumbnail: s.thumbnail,
-          dimensions: `${s.width}x${s.height}`,
-        })),
+        spaces,
       })
     );
     return;

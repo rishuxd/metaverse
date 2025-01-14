@@ -5,17 +5,24 @@ import client from "@repo/db/client";
 import ApiResponse from "../../utils/apiResponse";
 
 const createAvatar = async (req: Request, res: Response): Promise<void> => {
+  if (!req.file) {
+    res.status(400).json(new ApiError(400, "Image upload failed!"));
+    return;
+  }
+
   const parsedData = createAvatarSchema.safeParse(req.body);
   if (!parsedData.success) {
     res.status(400).json(new ApiError(400, "Invalid data!", parsedData.error));
     return;
   }
 
+  const imageUrl = `/uploads/${req.file.filename}`;
+
   try {
     const avatar = await client.avatar.create({
       data: {
         name: parsedData.data.name,
-        imageUrl: parsedData.data.imageUri,
+        imageUrl,
       },
     });
 

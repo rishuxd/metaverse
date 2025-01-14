@@ -5,26 +5,27 @@ import client from "@repo/db/client";
 import ApiResponse from "../../utils/apiResponse";
 
 const createMap = async (req: Request, res: Response): Promise<void> => {
+  if (!req.file) {
+    res.status(400).json(new ApiError(400, "Image upload failed!"));
+    return;
+  }
+
   const parsedData = createMapSchema.safeParse(req.body);
   if (!parsedData.success) {
     res.status(400).json(new ApiError(400, "Invalid data!", parsedData.error));
     return;
   }
 
+  const imageUrl = `/uploads/${req.file.filename}`;
+
   try {
     const map = await client.map.create({
       data: {
         name: parsedData.data.name,
-        width: parseInt(parsedData.data.dimensions.split("x")[0]),
-        height: parseInt(parsedData.data.dimensions.split("x")[1]),
-        thumbnail: parsedData.data.thumbnailUri,
-        mapElements: {
-          create: parsedData.data.defaultElements.map((element) => ({
-            elementId: element.elementId,
-            x: element.x,
-            y: element.y,
-          })),
-        },
+        width: parseInt(parsedData.data.width),
+        height: parseInt(parsedData.data.height),
+        description: parsedData.data.description,
+        imageUrl,
       },
     });
 

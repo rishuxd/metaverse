@@ -12,61 +12,13 @@ const createSpace = async (req: Request, res: Response): Promise<void> => {
   }
 
   try {
-    if (!parsedData.data.mapId) {
-      const space = await client.space.create({
-        data: {
-          name: parsedData.data.name,
-          width: parseInt(parsedData.data.dimensions.split("x")[0]),
-          height: parseInt(parsedData.data.dimensions.split("x")[1]),
-          creatorId: req.user?.id!,
-        },
-      });
-      res.json(
-        new ApiResponse(201, "Space created successfully!", {
-          spaceId: space.id,
-        })
-      );
-      return;
-    }
-
-    const map = await client.map.findUnique({
-      where: {
-        id: parsedData.data.mapId,
-      },
-      select: {
-        mapElements: true,
-        width: true,
-        height: true,
+    const space = await client.space.create({
+      data: {
+        name: parsedData.data.name,
+        mapId: parsedData.data.mapId,
+        creatorId: req.user?.id!,
       },
     });
-
-    if (!map) {
-      res.status(404).json(new ApiError(404, "Map not found!"));
-      return;
-    }
-
-    let space = await client.$transaction(async () => {
-      const space = await client.space.create({
-        data: {
-          name: parsedData.data.name,
-          width: map.width,
-          height: map.height,
-          creatorId: req.user?.id!,
-        },
-      });
-
-      await client.spaceElements.createMany({
-        data: map.mapElements.map((element) => ({
-          spaceId: space.id,
-          elementId: element.elementId,
-          x: element.x!,
-          y: element.y!,
-        })),
-      });
-
-      return space;
-    });
-
     res.json(
       new ApiResponse(201, "Space created successfully!", {
         spaceId: space.id,

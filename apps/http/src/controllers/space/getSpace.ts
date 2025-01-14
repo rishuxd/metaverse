@@ -8,14 +8,9 @@ const getSpace = async (req: Request, res: Response): Promise<void> => {
     const space = await client.space.findUnique({
       where: {
         id: req.params.spaceId,
-        creatorId: req.user?.id,
       },
       include: {
-        spaceElements: {
-          include: {
-            element: true,
-          },
-        },
+        map: true,
       },
     });
 
@@ -26,19 +21,7 @@ const getSpace = async (req: Request, res: Response): Promise<void> => {
 
     res.status(200).json(
       new ApiResponse(200, "Space fetched successfully.", {
-        dimensions: `${space.width}x${space.height}`,
-        elements: space.spaceElements.map((e) => ({
-          id: e.id,
-          element: {
-            id: e.element.id,
-            imageUrl: e.element.imageUrl,
-            width: e.element.width,
-            height: e.element.height,
-            static: e.element.static,
-          },
-          x: e.x,
-          y: e.y,
-        })),
+        space,
       })
     );
     return;

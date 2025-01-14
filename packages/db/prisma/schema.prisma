@@ -24,53 +24,23 @@ model User {
 }
 
 model Space {
-  id            String          @id @unique @default(cuid())
-  name          String
-  width         Int
-  height        Int
-  thumbnail     String?
-  creatorId     String
-  creator       User            @relation(fields: [creatorId], references: [id])
-  spaceElements SpaceElements[]
-}
-
-model SpaceElements {
-  id        String  @id @unique @default(cuid())
-  x         Int
-  y         Int
-  spaceId   String
-  space     Space   @relation(fields: [spaceId], references: [id])
-  elementId String
-  element   Element @relation(fields: [elementId], references: [id])
-}
-
-model Element {
-  id            String          @id @unique @default(cuid())
-  width         Int
-  height        Int
-  imageUrl      String
-  static        Boolean
-  spaceElements SpaceElements[]
-  mapElements   MapElements[]
+  id        String   @id @unique @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  mapId     String
+  creatorId String
+  creator   User     @relation(fields: [creatorId], references: [id])
+  map       Map      @relation(fields: [mapId], references: [id])
 }
 
 model Map {
-  id          String        @id @unique @default(cuid())
+  id          String  @id @unique @default(cuid())
   width       Int
   height      Int
   name        String
-  thumbnail   String?
-  mapElements MapElements[]
-}
-
-model MapElements {
-  id        String  @id @unique @default(cuid())
-  x         Int?
-  y         Int?
-  mapId     String
-  map       Map     @relation(fields: [mapId], references: [id])
-  elementId String
-  element   Element @relation(fields: [elementId], references: [id])
+  description String
+  imageUrl    String
+  spaces      Space[]
 }
 
 model Avatar {

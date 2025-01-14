@@ -6,6 +6,8 @@ import {
   ArrowBigLeft,
   ArrowLeft,
   EllipsisVertical,
+  Loader,
+  Loader2,
   PlusCircle,
   Stars,
   StepBack,
@@ -18,6 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Dashboard = () => {
   const router = useRouter();
@@ -26,6 +29,7 @@ const Dashboard = () => {
   const [selectedMap, setSelectedMap] = useState(null);
   const [spaceName, setSpaceName] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
 
   const user = {
     name: "John Doe",
@@ -47,8 +51,8 @@ const Dashboard = () => {
           }
         );
         if (response.status === 200 && isMounted) {
-          console.log(response.data.data.spaces);
           setSpaces(response.data.data.spaces);
+          setIsLoading(false);
         }
       } catch (error) {
         console.error("Failed to fetch spaces:", error);
@@ -233,7 +237,7 @@ const Dashboard = () => {
         </div>
       </nav>
 
-      <main className="flex flex-col bg-first flex-grow h-screen py-10 px-6</main>">
+      <main className="flex flex-col bg-first flex-grow h-screen py-10 px-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-5xl">
           {spaces.map((space) => (
             <div key={space.id}>
@@ -262,10 +266,45 @@ const Dashboard = () => {
           ))}
         </div>
 
-        {spaces.length === 0 && (
-          <div className="flex items-center justify-center">
-            <p>You have no spaces yet. Create one!</p>
+        {isLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-5xl">
+            <div className="h-72 w-80 flex flex-col space-y-6">
+              <Skeleton className=" h-full w-full rounded-xl" />
+              <div className="flex justify-between">
+                <Skeleton className="h-4 w-20" />
+                <div className=" flex gap-2">
+                  <Skeleton className="h-4 w-16" />
+                  <Skeleton className="h-4 w-8" />
+                </div>
+              </div>
+            </div>
+            <div className="h-72 w-80 flex flex-col space-y-6">
+              <Skeleton className=" h-full w-full rounded-xl" />
+              <div className="flex justify-between">
+                <Skeleton className="h-4 w-20" />
+                <div className=" flex gap-2">
+                  <Skeleton className="h-4 w-16" />
+                  <Skeleton className="h-4 w-8" />
+                </div>
+              </div>
+            </div>
+            <div className="h-72 w-80 flex flex-col space-y-6">
+              <Skeleton className=" h-full w-full rounded-xl" />
+              <div className="flex justify-between">
+                <Skeleton className="h-4 w-20" />
+                <div className=" flex gap-2">
+                  <Skeleton className="h-4 w-16" />
+                  <Skeleton className="h-4 w-8" />
+                </div>
+              </div>
+            </div>
           </div>
+        ) : (
+          spaces.length === 0 && (
+            <div className="flex items-center justify-center">
+              <p>You have no spaces yet. Create one!</p>
+            </div>
+          )
         )}
       </main>
     </div>

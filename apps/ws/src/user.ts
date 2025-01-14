@@ -78,6 +78,9 @@ export class User {
       where: {
         id: payload.spaceId,
       },
+      include: {
+        map: true,
+      },
     });
 
     if (!space) {
@@ -96,8 +99,8 @@ export class User {
 
     RoomManager.getInstance().addUserToRoom(payload.spaceId, this);
 
-    this.x = Math.floor(Math.random() * space?.width);
-    this.y = Math.floor(Math.random() * space?.height);
+    this.x = Math.floor(Math.random() * space?.map.width);
+    this.y = Math.floor(Math.random() * space?.map.height);
 
     this.send({
       type: "space-joined",
