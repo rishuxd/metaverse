@@ -18,13 +18,12 @@ export const VideoOverlay = ({ wsConnection, userId, mainScene }) => {
   const videoElements = useRef(new Map());
   const animationFrameId = useRef();
 
-  const MAX_DISTANCE = gridCells(1.2);
-  const FADE_START_DISTANCE = gridCells(1);
+  const MAX_DISTANCE = gridCells(2.2);
+  const FADE_START_DISTANCE = gridCells(2);
 
   const updateProximityEffects = () => {
     if (!mainScene) return;
 
-    // Find local player
     const localPlayer = mainScene.children.find(
       (child) => child?.userId === userId
     );
@@ -436,10 +435,10 @@ export const VideoOverlay = ({ wsConnection, userId, mainScene }) => {
   };
 
   return (
-    <div className="fixed bottom-4 right-4 flex flex-col gap-2">
+    <div className="fixed bottom-4 w-full flex justify-center items-center gap-2">
       {isLoading && (
         <div className="bg-black bg-opacity-50 text-white p-2 rounded">
-          Connecting to camera ;)
+          Connecting to camera!
         </div>
       )}
       {error && (

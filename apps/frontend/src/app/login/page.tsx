@@ -24,6 +24,8 @@ const Login = () => {
 
       if (response.status === 200) {
         localStorage.setItem("token", response.data.data.token);
+        localStorage.setItem("username", response.data.data.username);
+        localStorage.setItem("avatarUrl", response.data.data.avatarUrl);
         router.push("/dashboard");
       }
     } catch (err: any) {

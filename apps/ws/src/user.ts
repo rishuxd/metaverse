@@ -16,6 +16,16 @@ interface WebRTCMessage {
   };
 }
 
+interface ChatMessage {
+  type: "chat";
+  payload: {
+    message: string;
+    userId: string;
+    timestamp: Date;
+    targetUsers?: string[];
+  };
+}
+
 export class User {
   public userId?: string;
   private spaceId?: string;
@@ -44,6 +54,10 @@ export class User {
           this.handleMove(parsedData.payload);
           break;
 
+        case "chat":
+          this.handleChat(parsedData.payload);
+          break;
+
         case "webrtc-offer":
           this.handleWebRTCOffer(parsedData as WebRTCMessage);
           break;
@@ -64,6 +78,42 @@ export class User {
           break;
       }
     });
+  }
+
+  private handleChat(payload: { message: string; targetUsers?: string[] }) {
+    const chatMessage: ChatMessage = {
+      type: "chat",
+      payload: {
+        message: payload.message,
+        userId: this.userId!,
+        timestamp: new Date(),
+        targetUsers: payload.targetUsers,
+      },
+    };
+
+    if (payload.targetUsers?.length) {
+      const targetUsers = RoomManager.getInstance()
+        .rooms.get(this.spaceId!)
+        ?.filter((user) => payload.targetUsers!.includes(user.userId!));
+
+      if (targetUsers?.length) {
+        targetUsers.forEach((user) => {
+          user.send(chatMessage);
+        });
+      }
+    } else {
+      RoomManager.getInstance().broadcastToRoom(
+        this.spaceId!,
+        this,
+        chatMessage
+      );
+    }
+
+    // Ensures message timestamp is consistent
+    // Confirms message was actually processed by server
+    // Maintains same message order for everyone
+    // Simpler frontend logic (just display what server sends)
+    this.send(chatMessage);
   }
 
   private handleMediaStateUpdate(payload: any) {
@@ -97,6 +147,31 @@ export class User {
     this.userId = userId;
     this.spaceId = payload.spaceId;
 
+    const existingRecord = await client.userSpace.findFirst({
+      where: {
+        userId: this.userId,
+        spaceId: this.spaceId,
+      },
+    });
+
+    if (existingRecord) {
+      await client.userSpace.update({
+        where: { id: existingRecord.id },
+        data: {
+          joinedAt: new Date(),
+          leftAt: null,
+        },
+      });
+    } else {
+      await client.userSpace.create({
+        data: {
+          userId: this.userId!,
+          spaceId: this.spaceId,
+          joinedAt: new Date(),
+        },
+      });
+    }
+
     RoomManager.getInstance().addUserToRoom(payload.spaceId, this);
 
     this.x = Math.floor(Math.random() * space?.map.width);
@@ -128,6 +203,15 @@ export class User {
         userId: this.userId,
         x: this.x,
         y: this.y,
+      },
+    });
+
+    RoomManager.getInstance().broadcastToRoom(payload.spaceId, this, {
+      type: "chat",
+      payload: {
+        message: `${this.userId} joined the room.`,
+        userId: "system",
+        timestamp: new Date(),
       },
     });
   }
@@ -194,14 +278,40 @@ export class User {
     }
   }
 
-  destroy() {
-    RoomManager.getInstance().broadcastToRoom(this.spaceId!, this, {
-      type: "user-left",
-      payload: {
-        userId: this.userId,
-      },
-    });
-    RoomManager.getInstance().removeUserFromRoom(this.spaceId!, this);
+  async destroy() {
+    try {
+      await client.userSpace.update({
+        where: {
+          userId_spaceId: {
+            userId: this.userId!,
+            spaceId: this.spaceId!,
+          },
+        },
+        data: {
+          leftAt: new Date(),
+        },
+      });
+
+      RoomManager.getInstance().broadcastToRoom(this.spaceId!, this, {
+        type: "user-left",
+        payload: {
+          userId: this.userId,
+        },
+      });
+
+      RoomManager.getInstance().broadcastToRoom(this.spaceId!, this, {
+        type: "chat",
+        payload: {
+          message: `${this.userId} left the room.`,
+          userId: "system",
+          timestamp: new Date(),
+        },
+      });
+
+      RoomManager.getInstance().removeUserFromRoom(this.spaceId!, this);
+    } catch (error) {
+      console.error("Failed to destroy user-space relationship:", error);
+    }
   }
 
   send(data: any) {

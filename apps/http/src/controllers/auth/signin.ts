@@ -19,6 +19,9 @@ const signin = async (req: Request, res: Response): Promise<void> => {
       where: {
         username: parsedDate.data.username,
       },
+      include: {
+        avatar: true,
+      },
     });
 
     if (!user) {
@@ -37,6 +40,8 @@ const signin = async (req: Request, res: Response): Promise<void> => {
     res.status(200).json(
       new ApiResponse(200, "User signed in", {
         token,
+        username: user.username,
+        avatarUrl: user.avatar?.imageUrl || null,
       })
     );
   } catch (error) {

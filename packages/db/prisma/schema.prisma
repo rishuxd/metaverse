@@ -14,23 +14,37 @@ datasource db {
 }
 
 model User {
-  id       String  @id @unique @default(cuid())
-  username String  @unique
-  password String
-  avatarId String?
-  role     Role
-  spaces   Space[]
-  avatar   Avatar? @relation(fields: [avatarId], references: [id])
+  id           String      @id @unique @default(cuid())
+  username     String      @unique
+  password     String
+  avatarId     String?
+  role         Role
+  spaces       Space[]
+  avatar       Avatar?     @relation(fields: [avatarId], references: [id])
+  joinedSpaces UserSpace[]
 }
 
 model Space {
-  id        String   @id @unique @default(cuid())
-  name      String
-  createdAt DateTime @default(now())
-  mapId     String
-  creatorId String
-  creator   User     @relation(fields: [creatorId], references: [id])
-  map       Map      @relation(fields: [mapId], references: [id])
+  id          String      @id @unique @default(cuid())
+  name        String
+  createdAt   DateTime    @default(now())
+  mapId       String
+  creatorId   String
+  creator     User        @relation(fields: [creatorId], references: [id])
+  map         Map         @relation(fields: [mapId], references: [id])
+  joinedUsers UserSpace[]
+}
+
+model UserSpace {
+  id       String    @id @unique @default(cuid())
+  userId   String
+  spaceId  String
+  joinedAt DateTime  @default(now())
+  leftAt   DateTime?
+  user     User      @relation(fields: [userId], references: [id])
+  space    Space     @relation(fields: [spaceId], references: [id])
+
+  @@unique([userId, spaceId])
 }
 
 model Map {

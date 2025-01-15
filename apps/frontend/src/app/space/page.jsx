@@ -12,8 +12,11 @@ import { Camera } from "@/utils/Camera";
 import { RemoteUser } from "@/objects/RemoteUser";
 import { VideoOverlay } from "@/components/video";
 import axios from "axios";
+import { useRouter } from "next/navigation";
+import ChatPanel from "@/components/chat";
 
 export default function Page() {
+  const router = useRouter();
   const wsRef = useRef(null);
   const canvasRef = useRef(null);
   const mainSceneRef = useRef(null);
@@ -45,7 +48,7 @@ export default function Page() {
   // Initialize WebSocket connection and fetch space data
   useEffect(() => {
     const url = new URL(window.location.href);
-    const token = localStorage.getItem("token");
+    const token = url.searchParams.get("token");
     const spaceId = url.searchParams.get("spaceId");
 
     if (!token || !spaceId) {
@@ -129,8 +132,6 @@ export default function Page() {
         const mapImage = await loadImage(
           `${process.env.NEXT_PUBLIC_BASE_URL}${space.map.imageUrl}`
         );
-
-        console.log(mapImage);
 
         const mapSprite = new Sprite({
           resource: mapImage,
@@ -228,12 +229,12 @@ export default function Page() {
     }
   };
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
-  return (
-    <>
+  return isLoading ? (
+    <div className="bg-fourth h-screen flex justify-center items-center">
+      <img src="/leaf.png" alt="Logo" width={36} height={36} />
+    </div>
+  ) : (
+    <div className="relative">
       <canvas
         ref={canvasRef}
         id="game-canvas"
@@ -241,13 +242,32 @@ export default function Page() {
         height={gridCells(20)}
       />
 
+      <div className="absolute top-2 left-2 flex gap-2">
+        <div
+          className=" flex items-center px-3 text-white bg-black bg-opacity-50 rounded-lg transition-all hover:bg-opacity-60 cursor-pointer"
+          onClick={() => router.push("/dashboard")}
+        >
+          <img src="rec.png" alt="logo" width={20} />
+        </div>
+        <div className="px-2 text-white bg-black bg-opacity-50 py-2 rounded-lg transition-all hover:bg-opacity-60">
+          {space?.name || "Unknown Space"}
+        </div>
+      </div>
+
       {isConnected && userId && (
-        <VideoOverlay
-          wsConnection={wsRef.current}
-          userId={userId}
-          mainScene={mainSceneRef.current}
-        />
+        <>
+          <ChatPanel
+            wsConnection={wsRef.current}
+            userId={userId}
+            mainScene={mainSceneRef.current}
+          />
+          <VideoOverlay
+            wsConnection={wsRef.current}
+            userId={userId}
+            mainScene={mainSceneRef.current}
+          />
+        </>
       )}
-    </>
+    </div>
   );
 }

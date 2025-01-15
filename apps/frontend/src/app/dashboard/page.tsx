@@ -1,17 +1,8 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
-import {
-  ArrowBigLeft,
-  ArrowLeft,
-  EllipsisVertical,
-  Loader,
-  Loader2,
-  PlusCircle,
-  Stars,
-  StepBack,
-} from "lucide-react";
+import { ArrowLeft, LogOut, PlusCircle, Stars } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -20,16 +11,18 @@ import {
 } from "@/components/ui/dialog";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { Skeleton } from "@/components/ui/skeleton";
+import SpacesLayout from "@/components/spaceCard";
 
 const Dashboard = () => {
   const router = useRouter();
   const [spaces, setSpaces] = useState([]);
+  const [recentSpaces, setRecentSpaces] = useState([]);
   const [maps, setMaps] = useState([]);
   const [selectedMap, setSelectedMap] = useState(null);
   const [spaceName, setSpaceName] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [token, setToken] = useState("");
 
   const user = {
     name: "John Doe",
@@ -39,6 +32,8 @@ const Dashboard = () => {
   useEffect(() => {
     let isMounted = true;
     const token = localStorage.getItem("token");
+    if (!token) return;
+    setToken(token);
 
     const fetchSpaces = async () => {
       try {
@@ -52,6 +47,29 @@ const Dashboard = () => {
         );
         if (response.status === 200 && isMounted) {
           setSpaces(response.data.data.spaces);
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error("Failed to fetch spaces:", error);
+        if (isMounted) {
+          setError("Failed to fetch spaces!");
+        }
+      }
+    };
+
+    const fetchRecentSpaces = async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/space/recent`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        if (response.status === 200 && isMounted) {
+          console.log(response.data.data.recentSpaces);
+          setRecentSpaces(response.data.data.recentSpaces);
           setIsLoading(false);
         }
       } catch (error) {
@@ -92,7 +110,7 @@ const Dashboard = () => {
       }
 
       try {
-        await Promise.all([fetchSpaces(), fetchMaps()]);
+        await Promise.all([fetchSpaces(), fetchMaps(), fetchRecentSpaces()]);
       } catch (error) {
         console.error("Failed to fetch data:", error);
         setError("Failed to fetch data!");
@@ -138,6 +156,11 @@ const Dashboard = () => {
     return;
   };
 
+  const handleLogout = () => {
+    localStorage.clear();
+    window.location.href = "/login";
+  };
+
   return (
     <div className="flex flex-col h-screen">
       <nav className="flex items-center justify-between bg-second px-8 py-4 shadow-2xl">
@@ -151,22 +174,34 @@ const Dashboard = () => {
           />
           <div className="rounded-lg flex gap-2 py-2 px-4 bg-fourth font-semibold hover:bg-fifth transition-all">
             <Stars size={20} className="mt-[1px]" />
-            My Spaces
+            Spaces
           </div>
         </div>
         <div className="flex items-center gap-8">
           <div className="flex items-center gap-4">
             <Image
-              src={user.avatar}
+              src={
+                localStorage.getItem("avatarUrl") == null
+                  ? `${process.env.NEXT_PUBLIC_BASE_URL}${localStorage.getItem("avatarUrl")}`
+                  : "/PIC.jpg"
+              }
               alt="User Avatar"
               width={34}
               height={34}
               className="rounded-full"
             />
             <span className="rounded-lg py-2 px-4 bg-fifth font-semibold hover:bg-fourth transition-all">
-              {user.name}
+              {localStorage.getItem("username") || "Username"}
             </span>
           </div>
+
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 rounded-lg py-2 px-4 bg-red-100 text-red-600 hover:bg-red-200 transition-all"
+          >
+            <LogOut size={18} />
+            <span>Logout</span>
+          </button>
           <Dialog>
             <DialogTrigger asChild>
               <button className="rounded-lg flex gap-2 py-2 px-4 bg-third font-semibold hover:bg-fourth transition-all">
@@ -237,76 +272,13 @@ const Dashboard = () => {
         </div>
       </nav>
 
-      <main className="flex flex-col bg-first flex-grow h-screen py-10 px-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-5xl">
-          {spaces.map((space) => (
-            <div key={space.id}>
-              <div
-                className="bg-black h-full w-full rounded-lg shadow-2xl transition-all overflow-hidden hover:scale-105"
-                onClick={() => router.push(`/space?spaceId=${space.id}`)}
-              >
-                <Image
-                  src={`${process.env.NEXT_PUBLIC_BASE_URL}${space.map.imageUrl}`}
-                  alt="Space Image"
-                  width={space.map.width * 16}
-                  height={space.map.height * 16}
-                  className="h-full w-full object-cover"
-                />
-              </div>
-              <div className="flex text-sm justify-between pl-1 mt-4">
-                <h2 className="font-semibold ">{space.name}</h2>
-                <div className="flex gap-2 items-center">
-                  <p className="text-xs">
-                    {new Date(space.createdAt).toLocaleDateString()}
-                  </p>
-                  <EllipsisVertical size={16} className="text-gray-300" />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-5xl">
-            <div className="h-72 w-80 flex flex-col space-y-6">
-              <Skeleton className=" h-full w-full rounded-xl" />
-              <div className="flex justify-between">
-                <Skeleton className="h-4 w-20" />
-                <div className=" flex gap-2">
-                  <Skeleton className="h-4 w-16" />
-                  <Skeleton className="h-4 w-8" />
-                </div>
-              </div>
-            </div>
-            <div className="h-72 w-80 flex flex-col space-y-6">
-              <Skeleton className=" h-full w-full rounded-xl" />
-              <div className="flex justify-between">
-                <Skeleton className="h-4 w-20" />
-                <div className=" flex gap-2">
-                  <Skeleton className="h-4 w-16" />
-                  <Skeleton className="h-4 w-8" />
-                </div>
-              </div>
-            </div>
-            <div className="h-72 w-80 flex flex-col space-y-6">
-              <Skeleton className=" h-full w-full rounded-xl" />
-              <div className="flex justify-between">
-                <Skeleton className="h-4 w-20" />
-                <div className=" flex gap-2">
-                  <Skeleton className="h-4 w-16" />
-                  <Skeleton className="h-4 w-8" />
-                </div>
-              </div>
-            </div>
-          </div>
-        ) : (
-          spaces.length === 0 && (
-            <div className="flex items-center justify-center">
-              <p>You have no spaces yet. Create one!</p>
-            </div>
-          )
-        )}
-      </main>
+      <SpacesLayout
+        spaces={spaces}
+        recentSpaces={recentSpaces}
+        token={token}
+        router={router}
+        isLoading={isLoading}
+      />
     </div>
   );
 };
