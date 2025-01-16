@@ -19,7 +19,6 @@ const ChatPanel = ({ wsConnection, userId, mainScene }) => {
 
   useEffect(() => {
     const handleMessage = (event) => {
-      console.log(event?.data);
       const message = JSON.parse(event.data);
 
       switch (message.type) {
@@ -44,7 +43,10 @@ const ChatPanel = ({ wsConnection, userId, mainScene }) => {
       type: "chat",
       payload: {
         message: message.trim(),
-        targetUsers: selectedUsers.length > 0 ? selectedUsers : undefined,
+        targetUsers:
+          selectedUsers.length > 0
+            ? selectedUsers.map((user) => user.userId) // Extract just the IDs for sending
+            : undefined,
       },
     };
 
@@ -61,11 +63,11 @@ const ChatPanel = ({ wsConnection, userId, mainScene }) => {
     return users;
   };
 
-  const toggleUserSelection = (targetUserId) => {
+  const toggleUserSelection = (targetUser) => {
     setSelectedUsers((prev) =>
-      prev.includes(targetUserId)
-        ? prev.filter((id) => id !== targetUserId)
-        : [...prev, targetUserId]
+      prev.some((user) => user.userId === targetUser.userId)
+        ? prev.filter((user) => user.userId !== targetUser.userId)
+        : [...prev, targetUser]
     );
   };
 
@@ -75,23 +77,51 @@ const ChatPanel = ({ wsConnection, userId, mainScene }) => {
     const isPrivateMessage = msg.targetUsers?.length > 0;
 
     return (
-      <div className={`mb-2 ${isOwnMessage ? "text-right" : ""}`}>
+      <div
+        className={`mb-4 flex ${isOwnMessage ? "justify-end" : "justify-start"}`}
+      >
         <div
-          className={`inline-block px-3 py-2 rounded-lg max-w-[80%] ${
-            isOwnMessage ? "bg-blue-500 text-white" : "bg-gray-700 text-white"
-          } ${isSystemMessage ? "bg-gray-500 italic text-sm" : ""}`}
+          className={`flex flex-col ${
+            isOwnMessage ? "items-end" : "items-start"
+          } max-w-[80%]`}
         >
           {!isOwnMessage && !isSystemMessage && (
-            <div className="text-xs text-gray-300 mb-1">{msg.userId}</div>
+            <div className="text-xs text-gray-300 mb-1 flex items-center gap-2">
+              <span className="font-semibold">{msg.username}</span>
+              <span className="text-gray-400">
+                {new Date(msg.timestamp).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </span>
+            </div>
           )}
-          <div className="text-sm">
+
+          <div
+            className={`px-4 py-3 rounded-2xl shadow-xl ${
+              isOwnMessage
+                ? "bg-blue-500 text-white"
+                : isSystemMessage
+                  ? "bg-gray-500 italic text-sm"
+                  : "bg-gray-700 text-white"
+            }`}
+          >
             {isPrivateMessage && (
-              <span className="text-xs italic text-gray-300 mb-1 block">
-                Wishperd
+              <span className="text-xs italic text-gray-300 block mb-1">
+                Whispered
               </span>
             )}
-            {msg.message}
+            <span className="text-sm">{msg.message}</span>
           </div>
+
+          {isOwnMessage && (
+            <div className="text-xs text-gray-400 mt-1">
+              {new Date(msg.timestamp).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </div>
+          )}
         </div>
       </div>
     );
@@ -99,11 +129,14 @@ const ChatPanel = ({ wsConnection, userId, mainScene }) => {
 
   return (
     <div className="absolute top-2 right-2 flex gap-2">
+      <div className="flex items-center gap-2 p-2 text-white bg-black bg-opacity-50 rounded-lg transition-all ">
+        {localStorage.getItem("username")}
+      </div>
       <button
-        onClick={() => setIsOpen(!isOpen) && scrollToBottom()}
-        className="flex items-center gap-2 p-3 text-white bg-black bg-opacity-50 rounded-lg transition-all hover:bg-opacity-60"
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-2 px-3 py-2 text-white bg-black bg-opacity-50 rounded-lg transition-all hover:bg-opacity-60"
       >
-        <MessageSquareText size={18} />
+        <MessageSquareText size={20} />
       </button>
 
       {isOpen && (
@@ -111,14 +144,14 @@ const ChatPanel = ({ wsConnection, userId, mainScene }) => {
           <div className="flex flex-col h-96">
             {selectedUsers.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-2">
-                {selectedUsers.map((userId) => (
+                {selectedUsers.map((user) => (
                   <div
-                    key={userId}
+                    key={user.userId}
                     className="bg-blue-500 text-white px-2 py-1 rounded-full text-sm flex items-center gap-1"
                   >
-                    <span>{userId}</span>
+                    <span>{user.username}</span>
                     <button
-                      onClick={() => toggleUserSelection(userId)}
+                      onClick={() => toggleUserSelection(user)}
                       className="hover:text-gray-200"
                     >
                       <X size={14} />
@@ -173,13 +206,22 @@ const ChatPanel = ({ wsConnection, userId, mainScene }) => {
                   {getActiveUsers().map((user) => (
                     <button
                       key={user.userId}
-                      onClick={() => toggleUserSelection(user.userId)}
-                      className={`w-full px-3  py-2 text-left text-white hover:bg-gray-700 flex items-center gap-2 ${
-                        selectedUsers.includes(user.userId) ? "bg-gray-700" : ""
+                      onClick={() =>
+                        toggleUserSelection({
+                          userId: user.userId,
+                          username: user.username,
+                        })
+                      }
+                      className={`w-full px-3 py-2 text-left text-white hover:bg-gray-700 flex items-center gap-2 ${
+                        selectedUsers.some(
+                          (selected) => selected.userId === user.userId
+                        )
+                          ? "bg-gray-700"
+                          : ""
                       }`}
                     >
                       <User size={14} />
-                      <span className="text-sm">{user.userId}</span>
+                      <span className="text-sm">{user.username}</span>
                     </button>
                   ))}
                 </div>

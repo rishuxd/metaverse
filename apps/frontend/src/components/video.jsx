@@ -9,6 +9,7 @@ export const VideoOverlay = ({ wsConnection, userId, mainScene }) => {
   const [isAudioMuted, setIsAudioMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [peerMediaStates, setPeerMediaStates] = useState(new Map());
+  const [peerDetails, setPeerDetails] = useState(new Map());
 
   const localVideoRef = useRef();
   const peerConnections = useRef(new Map());
@@ -109,7 +110,6 @@ export const VideoOverlay = ({ wsConnection, userId, mainScene }) => {
 
     const handleMessage = (event) => {
       const message = JSON.parse(event.data);
-      console.log("Received message:", message);
 
       switch (message.type) {
         case "webrtc-offer":
@@ -122,7 +122,7 @@ export const VideoOverlay = ({ wsConnection, userId, mainScene }) => {
           handleReceiveICECandidate(message.payload);
           break;
         case "user-joined":
-          initiateCall(message.payload.userId);
+          initiateCall(message.payload.userId, message.payload.username);
           break;
         case "user-left":
           handleUserLeft(message.payload.userId);
@@ -151,7 +151,6 @@ export const VideoOverlay = ({ wsConnection, userId, mainScene }) => {
   }, []);
 
   const handleMediaStateUpdate = (payload) => {
-    console.log("Received media state update:", payload);
     const { userId: peerId, isAudioMuted, isVideoOff } = payload;
     setPeerMediaStates(
       (prev) => new Map(prev.set(peerId, { isAudioMuted, isVideoOff }))
@@ -189,7 +188,7 @@ export const VideoOverlay = ({ wsConnection, userId, mainScene }) => {
     }
   };
 
-  const initiateCall = async (peerId) => {
+  const initiateCall = async (peerId, username) => {
     if (peerId === userId) return;
 
     if (peerConnections.current.has(peerId)) {
@@ -197,6 +196,8 @@ export const VideoOverlay = ({ wsConnection, userId, mainScene }) => {
       existingConnection.close();
       peerConnections.current.delete(peerId);
     }
+
+    setPeerDetails((prev) => new Map(prev.set(peerId, { username })));
 
     const peerConnection = new RTCPeerConnection(configuration);
     peerConnections.current.set(peerId, peerConnection);
@@ -209,7 +210,7 @@ export const VideoOverlay = ({ wsConnection, userId, mainScene }) => {
       if (peerConnection.connectionState === "failed") {
         console.warn(`Connection with ${peerId} failed. Reinitiating...`);
         handleUserLeft(peerId);
-        initiateCall(peerId);
+        initiateCall(peerId, username);
       }
     };
 
@@ -255,13 +256,15 @@ export const VideoOverlay = ({ wsConnection, userId, mainScene }) => {
     }
   };
 
-  const handleReceiveOffer = async ({ offer, from }) => {
+  const handleReceiveOffer = async ({ offer, from, username }) => {
     try {
       if (!localStream.current) {
         console.warn("Local stream not ready. Retrying in 100ms...");
-        setTimeout(() => handleReceiveOffer({ offer, from }), 100);
+        setTimeout(() => handleReceiveOffer({ offer, from, username }), 100);
         return;
       }
+
+      setPeerDetails((prev) => new Map(prev.set(from, { username })));
 
       const peerConnection = new RTCPeerConnection(configuration);
       peerConnections.current.set(from, peerConnection);
@@ -274,7 +277,7 @@ export const VideoOverlay = ({ wsConnection, userId, mainScene }) => {
         if (peerConnection.connectionState === "failed") {
           console.warn(`Connection with ${from} failed. Reinitiating...`);
           handleUserLeft(from);
-          initiateCall(from);
+          initiateCall(from, username);
         }
       };
 
@@ -388,6 +391,7 @@ export const VideoOverlay = ({ wsConnection, userId, mainScene }) => {
   };
 
   const renderPeerVideo = (peerId, stream) => {
+    const { username } = peerDetails.get(peerId) || { username: "Unknown" };
     const mediaState = peerMediaStates.get(peerId) || {
       isAudioMuted: false,
       isVideoOff: false,
@@ -428,7 +432,7 @@ export const VideoOverlay = ({ wsConnection, userId, mainScene }) => {
           </div>
         </div>
         <div className="absolute bottom-2 left-2 text-white text-sm bg-black bg-opacity-50 px-2 py-1 rounded">
-          {peerId.slice(-6)}
+          {username}
         </div>
       </div>
     );

@@ -14,6 +14,7 @@ import { VideoOverlay } from "@/components/video";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import ChatPanel from "@/components/chat";
+import { loadImage } from "@/helpers/loadImage";
 
 export default function Page() {
   const router = useRouter();
@@ -26,24 +27,6 @@ export default function Page() {
   const [space, setSpace] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-
-  // Function to load image resources
-  const loadImage = (url) => {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      const image = {
-        image: img,
-        isLoaded: false,
-      };
-
-      img.onload = () => {
-        image.isLoaded = true;
-        resolve(image);
-      };
-      img.onerror = reject;
-      img.src = url;
-    });
-  };
 
   // Initialize WebSocket connection and fetch space data
   useEffect(() => {
@@ -128,7 +111,6 @@ export default function Page() {
 
     async function initializeGame() {
       try {
-        // Load map resource
         const mapImage = await loadImage(
           `${process.env.NEXT_PUBLIC_BASE_URL}${space.map.imageUrl}`
         );
@@ -164,27 +146,40 @@ export default function Page() {
     initializeGame();
   }, [space, isLoading]);
 
-  const handleWebSocketMessage = (message) => {
+  const handleWebSocketMessage = async (message) => {
     const mainScene = mainSceneRef.current;
     if (!mainScene) return;
 
     switch (message.type) {
       case "space-joined":
+        console.log("space-joined", message);
+        const avatar = await loadImage(
+          `${process.env.NEXT_PUBLIC_BASE_URL}${message.payload.avatarUrl}`
+        );
+
         const hero = new Hero(
           gridCells(message.payload.spawn.x),
           gridCells(message.payload.spawn.y),
           wsRef.current,
-          message.payload.userId
+          message.payload.userId,
+          message.payload.username,
+          avatar
         );
         mainScene.addChild(hero);
         setUserId(message.payload.userId);
 
         if (message.payload.users) {
-          message.payload.users.forEach((user) => {
+          message.payload.users.forEach(async (user) => {
+            const avatar1 = await loadImage(
+              `${process.env.NEXT_PUBLIC_BASE_URL}${user.avatarUrl}`
+            );
+
             const remoteUser = new RemoteUser(
               gridCells(user.x),
               gridCells(user.y),
-              user.userId
+              user.userId,
+              user.username,
+              avatar1
             );
             mainScene.addChild(remoteUser);
           });
@@ -192,10 +187,21 @@ export default function Page() {
         break;
 
       case "user-joined":
+        const result = await loadImage(
+          `${process.env.NEXT_PUBLIC_BASE_URL}${message.payload.avatarUrl}`
+        );
+
+        if (!result.isLoaded) {
+          console.error(result.error);
+          return;
+        }
+
         const remoteUser = new RemoteUser(
           gridCells(message.payload.x),
           gridCells(message.payload.y),
-          message.payload.userId
+          message.payload.userId,
+          message.payload.username,
+          result
         );
         mainScene.addChild(remoteUser);
         break;
@@ -249,7 +255,7 @@ export default function Page() {
         >
           <img src="rec.png" alt="logo" width={20} />
         </div>
-        <div className="px-2 text-white bg-black bg-opacity-50 py-2 rounded-lg transition-all hover:bg-opacity-60">
+        <div className="px-2 text-white bg-black bg-opacity-50 py-2 rounded-lg transition-all">
           {space?.name || "Unknown Space"}
         </div>
       </div>

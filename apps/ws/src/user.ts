@@ -21,6 +21,7 @@ interface ChatMessage {
   payload: {
     message: string;
     userId: string;
+    username: string;
     timestamp: Date;
     targetUsers?: string[];
   };
@@ -28,6 +29,8 @@ interface ChatMessage {
 
 export class User {
   public userId?: string;
+  private username?: string;
+  private avatarUrl?: string;
   private spaceId?: string;
   private x: number;
   private y: number;
@@ -86,6 +89,7 @@ export class User {
       payload: {
         message: payload.message,
         userId: this.userId!,
+        username: this.username!,
         timestamp: new Date(),
         targetUsers: payload.targetUsers,
       },
@@ -145,6 +149,20 @@ export class User {
     }
 
     this.userId = userId;
+
+    const user = await client.user.findUnique({
+      where: {
+        id: userId,
+      },
+      include: {
+        avatar: true,
+      },
+    });
+
+    this.username = user?.username || "Anonymous";
+    this.avatarUrl =
+      user?.avatar?.imageUrl || "/uploads/1737032864137-avatar1.png";
+
     this.spaceId = payload.spaceId;
 
     const existingRecord = await client.userSpace.findFirst({
@@ -185,6 +203,8 @@ export class User {
           y: this.y,
         },
         userId: this.userId,
+        username: this.username,
+        avatarUrl: this.avatarUrl,
         users:
           RoomManager.getInstance()
             .rooms.get(payload.spaceId)!
@@ -193,6 +213,8 @@ export class User {
               x: u.x,
               y: u.y,
               userId: u.userId,
+              username: u.username,
+              avatarUrl: u.avatarUrl,
             })) ?? [],
       },
     });
@@ -201,6 +223,8 @@ export class User {
       type: "user-joined",
       payload: {
         userId: this.userId,
+        username: this.username,
+        avatarUrl: this.avatarUrl,
         x: this.x,
         y: this.y,
       },
@@ -209,7 +233,7 @@ export class User {
     RoomManager.getInstance().broadcastToRoom(payload.spaceId, this, {
       type: "chat",
       payload: {
-        message: `${this.userId} joined the room.`,
+        message: `${this.username} joined the room.`,
         userId: "system",
         timestamp: new Date(),
       },
@@ -241,6 +265,7 @@ export class User {
         payload: {
           offer: message.payload.offer,
           from: this.userId,
+          username: this.username,
         },
       });
     }
@@ -302,7 +327,7 @@ export class User {
       RoomManager.getInstance().broadcastToRoom(this.spaceId!, this, {
         type: "chat",
         payload: {
-          message: `${this.userId} left the room.`,
+          message: `${this.username} left the room.`,
           userId: "system",
           timestamp: new Date(),
         },

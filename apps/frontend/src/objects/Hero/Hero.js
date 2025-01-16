@@ -20,14 +20,17 @@ import {
 } from "./heroAnimations.js";
 import { moveTowards } from "@/helpers/moveTowards.js";
 import { events } from "@/utils/Events.js";
+import { loadImage } from "@/helpers/loadImage.js";
 
 export class Hero extends GameObject {
-  constructor(x, y, ws, userId) {
+  constructor(x, y, ws, userId, username, avatar) {
     super({
       position: new Vector2(x, y),
     });
 
     this.userId = userId;
+    this.username = username;
+    this.avatar = avatar;
     this.ws = ws;
 
     const shadow = new Sprite({
@@ -38,7 +41,7 @@ export class Hero extends GameObject {
     this.addChild(shadow);
 
     this.body = new Sprite({
-      resource: resources.images.hero,
+      resource: this.avatar,
       frameSize: new Vector2(32, 32),
       hFrames: 3,
       vFrames: 8,

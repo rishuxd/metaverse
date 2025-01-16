@@ -18,12 +18,14 @@ import {
 import { moveTowards } from "@/helpers/moveTowards.js";
 
 export class RemoteUser extends GameObject {
-  constructor(x, y, userId) {
+  constructor(x, y, userId, username, avatar) {
     super({
       position: new Vector2(x, y),
     });
 
-    this.userId = userId; // Store user ID for identification
+    this.userId = userId;
+    this.username = username;
+    this.avatar = avatar;
     this.destinationPosition = this.position.duplicate(); // Target position for movement
     this.facingDirection = DOWN; // Default facing direction
 
@@ -37,7 +39,7 @@ export class RemoteUser extends GameObject {
 
     // Add body sprite with animations
     this.body = new Sprite({
-      resource: resources.images.hero,
+      resource: this.avatar,
       frameSize: new Vector2(32, 32),
       hFrames: 3,
       vFrames: 8,

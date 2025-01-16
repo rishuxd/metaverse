@@ -32,6 +32,7 @@ const Dashboard = () => {
   useEffect(() => {
     let isMounted = true;
     const token = localStorage.getItem("token");
+    console.log(localStorage.getItem("avatarUrl"));
     if (!token) return;
     setToken(token);
 
@@ -177,20 +178,28 @@ const Dashboard = () => {
             Spaces
           </div>
         </div>
-        <div className="flex items-center gap-8">
-          <div className="flex items-center gap-4">
-            <Image
-              src={
-                localStorage.getItem("avatarUrl") == null
-                  ? `${process.env.NEXT_PUBLIC_BASE_URL}${localStorage.getItem("avatarUrl")}`
-                  : "/PIC.jpg"
-              }
-              alt="User Avatar"
-              width={34}
-              height={34}
-              className="rounded-full"
-            />
-            <span className="rounded-lg py-2 px-4 bg-fifth font-semibold hover:bg-fourth transition-all">
+        <div className="flex items-center justify-center gap-8">
+          <div className="flex items-center gap-2">
+            <div
+              className="overflow-hidden w-10 h-10 rounded-full"
+              style={{
+                position: "relative",
+              }}
+            >
+              <div
+                style={{
+                  marginLeft: 5,
+                  position: "absolute",
+                  width: "100%",
+                  height: "100%",
+                  backgroundImage: `url(${`${process.env.NEXT_PUBLIC_BASE_URL}${localStorage.getItem("avatarUrl")}`})`,
+                  scale: 2,
+                  imageRendering: "pixelated",
+                }}
+              />
+            </div>
+
+            <span className="rounded-lg py-2 px-4 bg-fourth font-semibold  transition-all">
               {localStorage.getItem("username") || "Username"}
             </span>
           </div>

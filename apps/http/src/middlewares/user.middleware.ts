@@ -18,8 +18,6 @@ export const userMiddleware = (
   res: Response,
   next: NextFunction
 ) => {
-  console.log("userMiddleware");
-  console.log(req.headers);
   const header = req.headers["authorization"];
   const token = header?.split(" ")[1];
 
