@@ -46,7 +46,7 @@ export class User {
   init() {
     this.ws.on("message", async (data) => {
       const parsedData = JSON.parse(data.toString());
-      console.log("Received message", parsedData);
+      console.log("Received message: ", parsedData);
 
       switch (parsedData.type) {
         case "join":
@@ -77,7 +77,7 @@ export class User {
           this.handleMediaStateUpdate(parsedData.payload);
           break;
         default:
-          console.log("Unknown message type", parsedData.type);
+          console.log("Unknown message type: ", parsedData.type);
           break;
       }
     });

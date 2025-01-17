@@ -5,7 +5,6 @@ import ApiError from "../../utils/apiError";
 
 const getAllSpace = async (req: Request, res: Response): Promise<void> => {
   try {
-    console.log("getAllSpace");
     const spaces = await client.space.findMany({
       where: {
         creatorId: req.user?.id,

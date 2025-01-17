@@ -98,7 +98,6 @@ export default function GameCanvas() {
   const handleWebSocketMessage = (message) => {
     const mainScene = mainSceneRef.current;
     if (!mainScene) return;
-    console.log(message);
 
     switch (message.type) {
       case "space-joined":

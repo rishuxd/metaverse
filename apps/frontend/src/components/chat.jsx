@@ -86,7 +86,7 @@ const ChatPanel = ({ wsConnection, userId, mainScene }) => {
           } max-w-[80%]`}
         >
           {!isOwnMessage && !isSystemMessage && (
-            <div className="text-xs text-gray-300 mb-1 flex items-center gap-2">
+            <div className="ml-1 text-xs text-gray-300 mb-1 flex items-center gap-2">
               <span className="font-semibold">{msg.username}</span>
               <span className="text-gray-400">
                 {new Date(msg.timestamp).toLocaleTimeString([], {
@@ -98,12 +98,12 @@ const ChatPanel = ({ wsConnection, userId, mainScene }) => {
           )}
 
           <div
-            className={`px-4 py-3 rounded-2xl shadow-xl ${
+            className={`px-4 py-2 bg-second rounded-2xl shadow-xl ${
               isOwnMessage
-                ? "bg-blue-500 text-white"
+                ? "bg-third text-white"
                 : isSystemMessage
-                  ? "bg-gray-500 italic text-sm"
-                  : "bg-gray-700 text-white"
+                  ? "italic"
+                  : ""
             }`}
           >
             {isPrivateMessage && (
@@ -147,7 +147,7 @@ const ChatPanel = ({ wsConnection, userId, mainScene }) => {
                 {selectedUsers.map((user) => (
                   <div
                     key={user.userId}
-                    className="bg-blue-500 text-white px-2 py-1 rounded-full text-sm flex items-center gap-1"
+                    className="bg-third text-white px-2 py-1 rounded-full text-sm flex items-center gap-1"
                   >
                     <span>{user.username}</span>
                     <button
@@ -185,7 +185,7 @@ const ChatPanel = ({ wsConnection, userId, mainScene }) => {
                     type="text"
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
-                    className="flex-1 text-sm bg-gray-700 text-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 text-sm bg-gray-700 text-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-third"
                     placeholder={
                       selectedUsers.length > 0
                         ? "Send private message..."
@@ -194,7 +194,7 @@ const ChatPanel = ({ wsConnection, userId, mainScene }) => {
                   />
                   <button
                     type="submit"
-                    className="bg-blue-500 text-white px-3 rounded-lg hover:bg-blue-600 transition-colors"
+                    className="bg-third text-white px-3 rounded-lg hover:bg-blue-600 transition-colors"
                   >
                     <Send size={16} />
                   </button>

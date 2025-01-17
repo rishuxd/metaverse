@@ -152,7 +152,6 @@ export default function Page() {
 
     switch (message.type) {
       case "space-joined":
-        console.log("space-joined", message);
         const avatar = await loadImage(
           `${process.env.NEXT_PUBLIC_BASE_URL}${message.payload.avatarUrl}`
         );
@@ -237,7 +236,17 @@ export default function Page() {
 
   return isLoading ? (
     <div className="bg-fourth h-screen flex justify-center items-center">
-      <img src="/leaf.png" alt="Logo" width={36} height={36} />
+      <div className="animate-[spin_2s_linear_infinite]">
+        <img
+          src="/leaf.png"
+          alt="Logo"
+          width={36}
+          height={36}
+          style={{
+            imageRendering: "auto",
+          }}
+        />
+      </div>
     </div>
   ) : (
     <div className="relative">
@@ -253,7 +262,14 @@ export default function Page() {
           className=" flex items-center px-3 text-white bg-black bg-opacity-50 rounded-lg transition-all hover:bg-opacity-60 cursor-pointer"
           onClick={() => router.push("/dashboard")}
         >
-          <img src="rec.png" alt="logo" width={20} />
+          <img
+            src="rec.png"
+            alt="logo"
+            width={20}
+            style={{
+              imageRendering: "auto",
+            }}
+          />
         </div>
         <div className="px-2 text-white bg-black bg-opacity-50 py-2 rounded-lg transition-all">
           {space?.name || "Unknown Space"}

@@ -35,7 +35,13 @@ const updateUserMetadata = async (
       },
     });
 
-    res.status(201).json(new ApiResponse(201, "User updated."));
+    const avatar = await client.avatar.findUnique({
+      where: {
+        id: parsedData.data.avatarId,
+      },
+    });
+
+    res.status(201).json(new ApiResponse(201, "User updated.", avatar));
     return;
   } catch (error) {
     res

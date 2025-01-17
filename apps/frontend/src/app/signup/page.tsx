@@ -23,10 +23,8 @@ const Signup = () => {
         }
       );
 
-      console.log(response);
-
       if (response.status === 201) {
-        router.push("/login"); // Redirect to login page
+        router.push("/login");
       }
     } catch (err: any) {
       setError(err.response?.data?.message || "Signup failed");
@@ -44,21 +42,19 @@ const Signup = () => {
     >
       <div className="flex flex-col items-center justify-between h-auto w-full max-w-md py-8 px-12 rounded-3xl bg-white shadow-2xl">
         <div
+          className="w-24 h-10 mb-6"
           style={{
-            width: "200px",
-            height: "80px",
-            overflow: "hidden",
-            marginBottom: "20px",
+            position: "relative",
           }}
         >
-          <Image
-            src={"/sprites/hero-sheet.png"}
-            width={200}
-            height={200}
-            alt="Logo"
+          <div
             style={{
-              objectFit: "cover",
-              objectPosition: "top left",
+              marginLeft: 5,
+              position: "absolute",
+              width: "100%",
+              height: "100%",
+              backgroundImage: `url("/avatars/avatar4.png")`,
+              scale: 2,
             }}
           />
         </div>

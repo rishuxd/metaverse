@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { ArrowLeft, LogOut, PlusCircle, Stars } from "lucide-react";
+import { ArrowLeft, Check, LogOut, PlusCircle, Stars } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -12,27 +12,25 @@ import {
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import SpacesLayout from "@/components/spaceCard";
+import { Avatar, Map, RecentSpace, Space } from "@/types";
 
 const Dashboard = () => {
   const router = useRouter();
-  const [spaces, setSpaces] = useState([]);
-  const [recentSpaces, setRecentSpaces] = useState([]);
-  const [maps, setMaps] = useState([]);
-  const [selectedMap, setSelectedMap] = useState(null);
-  const [spaceName, setSpaceName] = useState("");
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
-  const [token, setToken] = useState("");
+  const [spaces, setSpaces] = useState<Space[]>([]);
+  const [maps, setMaps] = useState<Map[]>([]);
+  const [recentSpaces, setRecentSpaces] = useState<RecentSpace[]>([]);
+  const [avatars, setAvatars] = useState<Avatar[]>([]);
 
-  const user = {
-    name: "John Doe",
-    avatar: "/PIC.jpg",
-  };
+  const [selectedMap, setSelectedMap] = useState<String | null>(null);
+  const [selectedAvatar, setSelectedAvatar] = useState<String | null>(null);
+  const [spaceName, setSpaceName] = useState<string>("");
+  const [error, setError] = useState<String | null>(null);
+  const [isLoading, setIsLoading] = useState<Boolean>(true);
+  const [token, setToken] = useState<String | null>(null);
 
   useEffect(() => {
     let isMounted = true;
     const token = localStorage.getItem("token");
-    console.log(localStorage.getItem("avatarUrl"));
     if (!token) return;
     setToken(token);
 
@@ -69,14 +67,13 @@ const Dashboard = () => {
           }
         );
         if (response.status === 200 && isMounted) {
-          console.log(response.data.data.recentSpaces);
           setRecentSpaces(response.data.data.recentSpaces);
           setIsLoading(false);
         }
       } catch (error) {
-        console.error("Failed to fetch spaces:", error);
+        console.error("Failed to fetch recent spaces:", error);
         if (isMounted) {
-          setError("Failed to fetch spaces!");
+          setError("Failed to fetch recent spaces!");
         }
       }
     };
@@ -93,13 +90,34 @@ const Dashboard = () => {
         );
 
         if (response.status === 200 && isMounted) {
-          console.log("Maps: ", response.data.data);
           setMaps(response.data.data);
         }
       } catch (error) {
         console.error("Failed to fetch maps:", error);
         if (isMounted) {
           setError("Failed to fetch maps!");
+        }
+      }
+    };
+
+    const fetchAvatars = async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/avatars`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (response.status === 201 && isMounted) {
+          setAvatars(response.data.data.avatars);
+        }
+      } catch (error) {
+        console.error("Failed to fetch avatars:", error);
+        if (isMounted) {
+          setError("Failed to fetch avatars!");
         }
       }
     };
@@ -111,7 +129,12 @@ const Dashboard = () => {
       }
 
       try {
-        await Promise.all([fetchSpaces(), fetchMaps(), fetchRecentSpaces()]);
+        await Promise.all([
+          fetchSpaces(),
+          fetchMaps(),
+          fetchRecentSpaces(),
+          fetchAvatars(),
+        ]);
       } catch (error) {
         console.error("Failed to fetch data:", error);
         setError("Failed to fetch data!");
@@ -142,8 +165,6 @@ const Dashboard = () => {
         }
       );
 
-      console.log(response.data);
-
       if (response.status === 201) {
         setSpaces([...spaces, response.data.data.space]);
         setSpaceName("");
@@ -162,6 +183,37 @@ const Dashboard = () => {
     window.location.href = "/login";
   };
 
+  const toggleAvatar = (id: string) => {
+    if (selectedAvatar === id) {
+      setSelectedAvatar(null);
+    } else {
+      setSelectedAvatar(id);
+    }
+  };
+
+  const handleSaveAvatar = async () => {
+    try {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/user/metadata`,
+        {
+          avatarId: selectedAvatar,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (response.status === 201) {
+        setSelectedAvatar(null);
+        localStorage.setItem("avatarUrl", response.data.data.imageUrl);
+      }
+    } catch (error) {
+      console.error("Failed to update avatar:", error);
+      setError("Failed to update avatar!");
+    }
+  };
+
   return (
     <div className="flex flex-col h-screen">
       <nav className="flex items-center justify-between bg-second px-8 py-4 shadow-2xl">
@@ -172,8 +224,11 @@ const Dashboard = () => {
             width={36}
             height={36}
             className="cursor-pointer"
+            style={{
+              imageRendering: "auto",
+            }}
           />
-          <div className="rounded-lg flex gap-2 py-2 px-4 bg-fourth font-semibold hover:bg-fifth transition-all">
+          <div className="rounded-lg flex gap-2 py-2 px-4 bg-fourth font-semibold  transition-all">
             <Stars size={20} className="mt-[1px]" />
             Spaces
           </div>
@@ -181,7 +236,7 @@ const Dashboard = () => {
         <div className="flex items-center justify-center gap-8">
           <div className="flex items-center gap-2">
             <div
-              className="overflow-hidden w-10 h-10 rounded-full"
+              className="w-10 h-10 rounded-full"
               style={{
                 position: "relative",
               }}
@@ -194,14 +249,62 @@ const Dashboard = () => {
                   height: "100%",
                   backgroundImage: `url(${`${process.env.NEXT_PUBLIC_BASE_URL}${localStorage.getItem("avatarUrl")}`})`,
                   scale: 2,
-                  imageRendering: "pixelated",
                 }}
               />
             </div>
 
-            <span className="rounded-lg py-2 px-4 bg-fourth font-semibold  transition-all">
-              {localStorage.getItem("username") || "Username"}
-            </span>
+            <Dialog>
+              <DialogTrigger asChild>
+                <button className="rounded-lg flex gap-2 py-2 px-4 bg-fourth font-semibold hover:bg-fifth transition-all">
+                  {localStorage.getItem("username")}
+                </button>
+              </DialogTrigger>
+              <DialogContent className="p-7">
+                <DialogTitle>How do you want to look?</DialogTitle>
+                <div className="grid grid-cols-3 gap-4 mt-4">
+                  {avatars.map((avatar) => (
+                    <div
+                      key={avatar.id}
+                      className="flex flex-col items-center gap-2"
+                      onClick={() => toggleAvatar(avatar.id)}
+                    >
+                      <div className="relative p-1 bg-fourth rounded-2xl shadow-md cursor-pointer hover:shadow-2xl transition-all hover:bg-fifth hover:-translate-y-1">
+                        <div
+                          className="overflow-hidden w-10 h-10 rounded-full"
+                          style={{
+                            position: "relative",
+                          }}
+                        >
+                          <div
+                            style={{
+                              marginLeft: 8,
+                              position: "absolute",
+                              width: "100%",
+                              height: "100%",
+                              backgroundImage: `url(${`${process.env.NEXT_PUBLIC_BASE_URL}${avatar.url}`})`,
+                              scale: 2,
+                            }}
+                          />
+                        </div>
+                        {selectedAvatar === avatar.id && (
+                          <div className="absolute top-0 right-0 p-1 bg-green-500 rounded-full -mt-1 -mr-1 z-10">
+                            <Check size={12} className="text-white" />
+                          </div>
+                        )}
+                      </div>
+                      <span className="text-sm font-medium">{avatar.name}</span>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  disabled={selectedAvatar === null}
+                  onClick={handleSaveAvatar}
+                  className="w-full mt-6 bg-third text-white rounded-xl py-2 hover:bg-fourth transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-third"
+                >
+                  <p className="font-semibold">Save</p>
+                </button>
+              </DialogContent>
+            </Dialog>
           </div>
 
           <button
@@ -268,8 +371,9 @@ const Dashboard = () => {
                       onChange={(e) => setSpaceName(e.target.value)}
                     />
                     <button
+                      disabled={spaceName === ""}
                       onClick={handleCreateSpace}
-                      className="bg-third text-white rounded-xl py-2 hover:bg-fourth transition-all"
+                      className="bg-third text-white rounded-xl py-2 hover:bg-fourth transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-third"
                     >
                       <p className="font-semibold">Create Space</p>
                     </button>
