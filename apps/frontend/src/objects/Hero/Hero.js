@@ -139,14 +139,9 @@ export class Hero extends GameObject {
     }
     this.facingDirection = input.direction ?? this.facingDirection;
 
-    // Apply boundary checks
-    isSpaceFree(walls, nextX, nextY);
-    if (true) {
+    if (isSpaceFree(walls.get("walls"), nextX, nextY)) {
       this.destinationPosition.x = nextX;
       this.destinationPosition.y = nextY;
-
-      const dx = this.destinationPosition.x - this.position.x;
-      const dy = this.destinationPosition.y - this.position.y;
 
       if (this.ws && this.ws.readyState === WebSocket.OPEN) {
         this.ws.send(

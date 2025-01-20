@@ -27,6 +27,13 @@ interface ChatMessage {
   };
 }
 
+function generateSpawnLocation(width: number, height: number, walls: string[]) {
+  const x = Math.floor(Math.random() * width);
+  const y = Math.floor(Math.random() * height);
+  if (!walls.includes(x + "," + y)) return { x, y };
+  return generateSpawnLocation(width, height, walls);
+}
+
 export class User {
   public userId?: string;
   private username?: string;
@@ -192,8 +199,13 @@ export class User {
 
     RoomManager.getInstance().addUserToRoom(payload.spaceId, this);
 
-    this.x = Math.floor(Math.random() * space?.map.width);
-    this.y = Math.floor(Math.random() * space?.map.height);
+    const { x, y } = generateSpawnLocation(
+      space.map.width,
+      space.map.height,
+      space.map.walls
+    );
+    this.x = x;
+    this.y = y;
 
     this.send({
       type: "space-joined",

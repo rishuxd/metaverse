@@ -25,6 +25,7 @@ const createMap = async (req: Request, res: Response): Promise<void> => {
         width: parseInt(parsedData.data.width),
         height: parseInt(parsedData.data.height),
         description: parsedData.data.description,
+        walls: parsedData.data.walls,
         imageUrl,
       },
     });

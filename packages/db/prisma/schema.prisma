@@ -48,12 +48,13 @@ model UserSpace {
 }
 
 model Map {
-  id          String  @id @unique @default(cuid())
+  id          String   @id @unique @default(cuid())
   width       Int
   height      Int
   name        String
   description String
   imageUrl    String
+  walls       String[]
   spaces      Space[]
 }
 

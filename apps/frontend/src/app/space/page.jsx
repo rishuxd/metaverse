@@ -15,6 +15,7 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import ChatPanel from "@/components/chat";
 import { loadImage } from "@/helpers/loadImage";
+import { walls } from "@/levels/level1";
 
 export default function Page() {
   const router = useRouter();
@@ -52,6 +53,7 @@ export default function Page() {
         );
 
         setSpace(response.data.data.space);
+        walls.set("walls", response.data.data.space.map.walls);
 
         // Then establish WebSocket connection
         wsRef.current = new WebSocket("ws://localhost:5001");
