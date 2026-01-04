@@ -159,13 +159,8 @@ const Dashboard = () => {
     };
   }, []);
 
-  // Check if user needs to select an avatar on first login
-  useEffect(() => {
-    const avatarUrl = localStorage.getItem("avatarUrl");
-    if (!avatarUrl || avatarUrl === "null") {
-      setIsAvatarDialogOpen(true);
-    }
-  }, []);
+  // Avatar selection is now handled in the lobby page
+  // No need to force it on dashboard
 
   const refreshSpaces = async () => {
     try {
@@ -286,7 +281,7 @@ const Dashboard = () => {
     try {
       const token = getAuthToken();
 
-      // Navigate to the space page (joining happens automatically when entering)
+      // Navigate to the space page
       router.push(`/space/${joinSpaceId}`);
 
       setIsJoinSpaceDialogOpen(false);
@@ -380,31 +375,13 @@ const Dashboard = () => {
               />
             </div>
 
-            <Dialog open={isAvatarDialogOpen} onOpenChange={(open) => {
-              // Only allow closing if user has an avatar
-              const avatarUrl = localStorage.getItem("avatarUrl");
-              if (avatarUrl && avatarUrl !== "null") {
-                setIsAvatarDialogOpen(open);
-              }
-            }}>
+            <Dialog open={isAvatarDialogOpen} onOpenChange={setIsAvatarDialogOpen}>
               <DialogTrigger asChild>
                 <button className="rounded-lg flex gap-2 py-2 px-4 bg-fourth font-semibold hover:bg-fifth transition-all">
                   {localStorage.getItem("username")}
                 </button>
               </DialogTrigger>
-              <DialogContent className="p-7" onInteractOutside={(e) => {
-                // Prevent closing on outside click if no avatar selected
-                const avatarUrl = localStorage.getItem("avatarUrl");
-                if (!avatarUrl || avatarUrl === "null") {
-                  e.preventDefault();
-                }
-              }} onEscapeKeyDown={(e) => {
-                // Prevent closing on Escape key if no avatar selected
-                const avatarUrl = localStorage.getItem("avatarUrl");
-                if (!avatarUrl || avatarUrl === "null") {
-                  e.preventDefault();
-                }
-              }}>
+              <DialogContent className="p-7">
                 <DialogTitle className="text-xl font-bold">Choose Your Avatar</DialogTitle>
                 <p className="text-sm text-gray-600 mt-1">Select an avatar to represent you</p>
                 <div className="grid grid-cols-3 gap-4 mt-6">

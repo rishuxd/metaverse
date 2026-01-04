@@ -18,6 +18,7 @@ import { loadImage } from "@/helpers/loadImage";
 import { walls } from "@/levels/level1";
 import { getAuthToken } from "@/utils/auth";
 import { Share2, Check } from "lucide-react";
+import SpaceLobbyOverlay from "@/components/lobby/SpaceLobbyOverlay";
 
 export default function SpacePage() {
   const router = useRouter();
@@ -28,6 +29,8 @@ export default function SpacePage() {
   const canvasRef = useRef(null);
   const mainSceneRef = useRef(null);
   const gameLoopRef = useRef(null);
+  const localVideoRef = useRef(null);
+  const mediaStreamRef = useRef(null);
 
   const [userId, setUserId] = useState(null);
   const [space, setSpace] = useState(null);
@@ -35,8 +38,136 @@ export default function SpacePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [copied, setCopied] = useState(false);
 
-  // Initialize WebSocket connection and fetch space data
+  // Lobby state
+  const [showLobby, setShowLobby] = useState(true);
+  const [avatars, setAvatars] = useState([]);
+  const [selectedAvatar, setSelectedAvatar] = useState(null);
+  const [hasAvatar, setHasAvatar] = useState(false);
+  const [isAudioEnabled, setIsAudioEnabled] = useState(true);
+  const [isVideoEnabled, setIsVideoEnabled] = useState(true);
+  const [error, setError] = useState(null);
+  const [loadingProgress, setLoadingProgress] = useState(0);
+  const [loadingSteps, setLoadingSteps] = useState({
+    spaceData: { status: 'loading', label: 'Fetching space...' },
+    assets: { status: 'loading', label: 'Loading assets...' },
+    media: { status: 'loading', label: 'Setting up media...' },
+    avatars: { status: 'loading', label: 'Loading avatars...' },
+  });
+
+  // Check if user has avatar
   useEffect(() => {
+    const avatarUrl = localStorage.getItem("avatarUrl");
+    setHasAvatar(!!(avatarUrl && avatarUrl !== "null"));
+  }, []);
+
+  // Lobby: Preload everything
+  useEffect(() => {
+    const token = getAuthToken();
+    if (!token || !spaceId) {
+      router.push("/login?redirect=/space/" + spaceId);
+      return;
+    }
+
+    let progress = 0;
+
+    // Task 1: Fetch space data
+    axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/space/${spaceId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    .then((response) => {
+      const spaceData = response.data.data.space;
+      setSpace(spaceData);
+      walls.set("walls", spaceData.map.walls);
+
+      setLoadingSteps((prev) => ({
+        ...prev,
+        spaceData: { status: 'success', label: 'Space loaded!' },
+      }));
+      progress += 25;
+      setLoadingProgress(progress);
+
+      // Task 2: Preload map image
+      loadImage(`${process.env.NEXT_PUBLIC_BASE_URL}${spaceData.map.imageUrl}`)
+        .then(() => {
+          setLoadingSteps((prev) => ({
+            ...prev,
+            assets: { status: 'success', label: 'Assets loaded!' },
+          }));
+          progress += 25;
+          setLoadingProgress(progress);
+        });
+    })
+    .catch((err) => {
+      console.error("Failed to fetch space:", err);
+      setError("Failed to load space. Please try again.");
+      setLoadingSteps((prev) => ({
+        ...prev,
+        spaceData: { status: 'error', label: 'Failed to load space' },
+      }));
+    });
+
+    // Task 3: Fetch avatars (if needed)
+    if (!hasAvatar) {
+      axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/avatars`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((response) => {
+        if (response.status === 201) {
+          setAvatars(response.data.data.avatars);
+          setLoadingSteps((prev) => ({
+            ...prev,
+            avatars: { status: 'success', label: 'Avatars loaded!' },
+          }));
+          progress += 25;
+          setLoadingProgress(progress);
+        }
+      })
+      .catch((err) => console.error("Failed to fetch avatars:", err));
+    } else {
+      setLoadingSteps((prev) => ({
+        ...prev,
+        avatars: { status: 'success', label: 'Avatar ready!' },
+      }));
+      progress += 25;
+      setLoadingProgress(progress);
+    }
+
+    // Task 4: Get user media
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+      .then((stream) => {
+        mediaStreamRef.current = stream;
+        if (localVideoRef.current) {
+          localVideoRef.current.srcObject = stream;
+        }
+        setLoadingSteps((prev) => ({
+          ...prev,
+          media: { status: 'success', label: 'Media ready!' },
+        }));
+        progress += 25;
+        setLoadingProgress(progress);
+      })
+      .catch((err) => {
+        console.warn("Media not available:", err);
+        setLoadingSteps((prev) => ({
+          ...prev,
+          media: { status: 'error', label: 'Media unavailable (optional)' },
+        }));
+        progress += 25;
+        setLoadingProgress(progress);
+      });
+
+    return () => {
+      // Cleanup only if still in lobby
+      if (showLobby && mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+      }
+    };
+  }, [spaceId, hasAvatar, showLobby]);
+
+  // Initialize WebSocket connection when joining from lobby
+  useEffect(() => {
+    if (showLobby) return; // Only run after lobby
+
     const token = getAuthToken();
 
     if (!token || !spaceId) {
@@ -263,6 +394,65 @@ export default function SpacePage() {
     initializeGame();
   }, [space, isLoading]);
 
+  // Lobby handlers
+  const toggleAudio = () => {
+    if (mediaStreamRef.current) {
+      const audioTrack = mediaStreamRef.current.getAudioTracks()[0];
+      if (audioTrack) {
+        audioTrack.enabled = !audioTrack.enabled;
+        setIsAudioEnabled(audioTrack.enabled);
+      }
+    }
+  };
+
+  const toggleVideo = () => {
+    if (mediaStreamRef.current) {
+      const videoTrack = mediaStreamRef.current.getVideoTracks()[0];
+      if (videoTrack) {
+        videoTrack.enabled = !videoTrack.enabled;
+        setIsVideoEnabled(videoTrack.enabled);
+      }
+    }
+  };
+
+  const handleSaveAvatar = async () => {
+    if (!selectedAvatar) return;
+
+    try {
+      const token = getAuthToken();
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/user/metadata`,
+        { avatarId: selectedAvatar },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (response.status === 201) {
+        localStorage.setItem("avatarUrl", response.data.data.imageUrl);
+        setHasAvatar(true);
+        setSelectedAvatar(null);
+      }
+    } catch (err) {
+      console.error("Failed to save avatar:", err);
+      setError("Failed to save avatar. Please try again.");
+    }
+  };
+
+  const canJoinSpace = () => {
+    const requiredSteps = [
+      loadingSteps.spaceData.status === 'success',
+      loadingSteps.assets.status === 'success',
+      hasAvatar,
+    ];
+    return requiredSteps.every(Boolean);
+  };
+
+  const handleJoinSpace = () => {
+    if (!canJoinSpace()) return;
+    // Hide lobby and start the space
+    setShowLobby(false);
+    setIsLoading(false);
+  };
+
   const handleCopyLink = () => {
     const shareUrl = `${window.location.origin}/space/${spaceId}`;
     navigator.clipboard.writeText(shareUrl).then(() => {
@@ -359,21 +549,7 @@ export default function SpacePage() {
     }
   };
 
-  return isLoading ? (
-    <div className="bg-fourth h-screen flex justify-center items-center">
-      <div className="animate-[spin_2s_linear_infinite]">
-        <img
-          src="/leaf.png"
-          alt="Logo"
-          width={36}
-          height={36}
-          style={{
-            imageRendering: "auto",
-          }}
-        />
-      </div>
-    </div>
-  ) : (
+  return (
     <div className="fixed inset-0 w-full h-full overflow-hidden bg-green-100">
       <canvas
         ref={canvasRef}
@@ -432,6 +608,28 @@ export default function SpacePage() {
             mainScene={mainSceneRef.current}
           />
         </>
+      )}
+
+      {/* Lobby Overlay */}
+      {showLobby && (
+        <SpaceLobbyOverlay
+          space={space}
+          avatars={avatars}
+          selectedAvatar={selectedAvatar}
+          hasAvatar={hasAvatar}
+          isAudioEnabled={isAudioEnabled}
+          isVideoEnabled={isVideoEnabled}
+          error={error}
+          loadingProgress={loadingProgress}
+          loadingSteps={loadingSteps}
+          localVideoRef={localVideoRef}
+          onToggleAudio={toggleAudio}
+          onToggleVideo={toggleVideo}
+          onSelectAvatar={setSelectedAvatar}
+          onSaveAvatar={handleSaveAvatar}
+          onJoin={handleJoinSpace}
+          canJoin={canJoinSpace()}
+        />
       )}
     </div>
   );
