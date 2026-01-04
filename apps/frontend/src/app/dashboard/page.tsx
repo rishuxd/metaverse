@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { ArrowLeft, Check, LogOut, PlusCircle, Stars } from "lucide-react";
+import { ArrowLeft, Check, LogOut, PlusCircle, Stars, UserPlus } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -13,6 +13,7 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import SpacesLayout from "@/components/spaceCard";
 import { Avatar, Map, RecentSpace, Space } from "@/types";
+import { getAuthToken, deleteCookie } from "@/utils/auth";
 
 const Dashboard = () => {
   const router = useRouter();
@@ -29,11 +30,15 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isCreatingSpace, setIsCreatingSpace] = useState<boolean>(false);
   const [isCreateSpaceDialogOpen, setIsCreateSpaceDialogOpen] = useState<boolean>(false);
+  const [isJoinSpaceDialogOpen, setIsJoinSpaceDialogOpen] = useState<boolean>(false);
+  const [joinSpaceId, setJoinSpaceId] = useState<string>("");
+  const [isJoiningSpace, setIsJoiningSpace] = useState<boolean>(false);
+  const [isAvatarDialogOpen, setIsAvatarDialogOpen] = useState<boolean>(false);
   const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
-    const token = localStorage.getItem("token");
+    const token = getAuthToken();
     if (!token) return;
     setToken(token);
 
@@ -49,7 +54,6 @@ const Dashboard = () => {
         );
         if (response.status === 200 && isMounted) {
           setSpaces(response.data.data.spaces);
-          setIsLoading(false);
         }
       } catch (error) {
         console.error("Failed to fetch spaces:", error);
@@ -71,7 +75,6 @@ const Dashboard = () => {
         );
         if (response.status === 200 && isMounted) {
           setRecentSpaces(response.data.data.recentSpaces);
-          setIsLoading(false);
         }
       } catch (error) {
         console.error("Failed to fetch recent spaces:", error);
@@ -128,6 +131,7 @@ const Dashboard = () => {
     const fetchData = async () => {
       if (!token) {
         setError("Unauthorized: No token found!");
+        setIsLoading(false);
         return;
       }
 
@@ -141,6 +145,10 @@ const Dashboard = () => {
       } catch (error) {
         console.error("Failed to fetch data:", error);
         setError("Failed to fetch data!");
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     };
 
@@ -151,9 +159,17 @@ const Dashboard = () => {
     };
   }, []);
 
+  // Check if user needs to select an avatar on first login
+  useEffect(() => {
+    const avatarUrl = localStorage.getItem("avatarUrl");
+    if (!avatarUrl || avatarUrl === "null") {
+      setIsAvatarDialogOpen(true);
+    }
+  }, []);
+
   const refreshSpaces = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getAuthToken();
       if (!token) return;
 
       const response = await axios.get(
@@ -173,6 +189,27 @@ const Dashboard = () => {
     }
   };
 
+  const refreshRecentSpaces = async () => {
+    try {
+      const token = getAuthToken();
+      if (!token) return;
+
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/space/recent`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (response.status === 200) {
+        setRecentSpaces(response.data.data.recentSpaces);
+      }
+    } catch (error) {
+      console.error("Failed to refresh recent spaces:", error);
+    }
+  };
+
   const handleCreateSpace = async () => {
     if (isCreatingSpace) return;
 
@@ -181,7 +218,7 @@ const Dashboard = () => {
     setSuccessMessage(null);
 
     try {
-      const token = localStorage.getItem("token");
+      const token = getAuthToken();
 
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_BASE_URL}/space`,
@@ -228,8 +265,47 @@ const Dashboard = () => {
     }
   };
 
+  const handleJoinDialogOpenChange = (open: boolean) => {
+    setIsJoinSpaceDialogOpen(open);
+
+    // Reset form when dialog closes
+    if (!open) {
+      setJoinSpaceId("");
+      setSuccessMessage(null);
+      setError(null);
+    }
+  };
+
+  const handleJoinSpace = async () => {
+    if (isJoiningSpace) return;
+
+    setIsJoiningSpace(true);
+    setError(null);
+    setSuccessMessage(null);
+
+    try {
+      const token = getAuthToken();
+
+      // Navigate to the space page (joining happens automatically when entering)
+      router.push(`/space/${joinSpaceId}`);
+
+      setIsJoinSpaceDialogOpen(false);
+    } catch (error) {
+      console.error("Failed to join space:", error);
+      setError("Failed to join space!");
+    } finally {
+      setIsJoiningSpace(false);
+    }
+  };
+
   const handleLogout = () => {
+    // Clear localStorage (username, avatarUrl)
     localStorage.clear();
+
+    // Clear the auth cookie
+    deleteCookie("token");
+
+    // Redirect to login
     window.location.href = "/login";
   };
 
@@ -257,6 +333,7 @@ const Dashboard = () => {
       if (response.status === 201) {
         setSelectedAvatar(null);
         localStorage.setItem("avatarUrl", response.data.data.imageUrl);
+        setIsAvatarDialogOpen(false);
       }
     } catch (error) {
       console.error("Failed to update avatar:", error);
@@ -283,7 +360,7 @@ const Dashboard = () => {
             Spaces
           </div>
         </div>
-        <div className="flex items-center justify-center gap-8">
+        <div className="flex items-center justify-center gap-3">
           <div className="flex items-center gap-2">
             <div
               className="w-10 h-10 rounded-full"
@@ -303,13 +380,31 @@ const Dashboard = () => {
               />
             </div>
 
-            <Dialog>
+            <Dialog open={isAvatarDialogOpen} onOpenChange={(open) => {
+              // Only allow closing if user has an avatar
+              const avatarUrl = localStorage.getItem("avatarUrl");
+              if (avatarUrl && avatarUrl !== "null") {
+                setIsAvatarDialogOpen(open);
+              }
+            }}>
               <DialogTrigger asChild>
                 <button className="rounded-lg flex gap-2 py-2 px-4 bg-fourth font-semibold hover:bg-fifth transition-all">
                   {localStorage.getItem("username")}
                 </button>
               </DialogTrigger>
-              <DialogContent className="p-7">
+              <DialogContent className="p-7" onInteractOutside={(e) => {
+                // Prevent closing on outside click if no avatar selected
+                const avatarUrl = localStorage.getItem("avatarUrl");
+                if (!avatarUrl || avatarUrl === "null") {
+                  e.preventDefault();
+                }
+              }} onEscapeKeyDown={(e) => {
+                // Prevent closing on Escape key if no avatar selected
+                const avatarUrl = localStorage.getItem("avatarUrl");
+                if (!avatarUrl || avatarUrl === "null") {
+                  e.preventDefault();
+                }
+              }}>
                 <DialogTitle className="text-xl font-bold">Choose Your Avatar</DialogTitle>
                 <p className="text-sm text-gray-600 mt-1">Select an avatar to represent you</p>
                 <div className="grid grid-cols-3 gap-4 mt-6">
@@ -358,18 +453,50 @@ const Dashboard = () => {
             </Dialog>
           </div>
 
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 rounded-lg py-2 px-4 bg-red-100 text-red-600 hover:bg-red-200 transition-all"
-          >
-            <LogOut size={18} />
-            <span>Logout</span>
-          </button>
+          <Dialog open={isJoinSpaceDialogOpen} onOpenChange={handleJoinDialogOpenChange}>
+            <DialogTrigger asChild>
+              <button className="rounded-lg flex gap-2 py-2 px-4 bg-teal-600 text-white font-semibold hover:bg-teal-700 transition-all">
+                <UserPlus size={20} className="mt-[1px]" />
+                Join
+              </button>
+            </DialogTrigger>
+            <DialogContent className="p-7">
+              <DialogTitle className="text-xl font-bold">Join a Space</DialogTitle>
+              <p className="text-sm text-gray-600 mt-1">Enter the space ID to join</p>
+              <div className="flex flex-col gap-4 mt-6">
+                <input
+                  type="text"
+                  className="rounded-xl p-3 text-gray-900 border-gray-300 border-2 focus:outline-none focus:ring-2 focus:ring-third focus:border-third transition-all"
+                  placeholder="Enter space ID"
+                  value={joinSpaceId}
+                  onChange={(e) => setJoinSpaceId(e.target.value)}
+                  disabled={isJoiningSpace}
+                />
+                {successMessage && (
+                  <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl">
+                    <p className="text-sm font-medium">{successMessage}</p>
+                  </div>
+                )}
+                {error && (
+                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl">
+                    <p className="text-sm font-medium">{error}</p>
+                  </div>
+                )}
+                <button
+                  disabled={joinSpaceId === "" || isJoiningSpace}
+                  onClick={handleJoinSpace}
+                  className="bg-teal-600 text-white rounded-xl py-3 font-semibold hover:bg-teal-700 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isJoiningSpace ? "Joining..." : "Join Space"}
+                </button>
+              </div>
+            </DialogContent>
+          </Dialog>
           <Dialog open={isCreateSpaceDialogOpen} onOpenChange={handleDialogOpenChange}>
             <DialogTrigger asChild>
               <button className="rounded-lg flex gap-2 py-2 px-4 bg-teal-600 text-white font-semibold hover:bg-teal-700 transition-all">
                 <PlusCircle size={20} className="mt-[1px]" />
-                Create Space
+                Create
               </button>
             </DialogTrigger>
             <DialogContent className="p-7">
@@ -446,6 +573,13 @@ const Dashboard = () => {
               )}
             </DialogContent>
           </Dialog>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 rounded-lg py-2 px-4 bg-red-100 text-red-600 hover:bg-red-200 transition-all"
+          >
+            <LogOut size={18} />
+            <span>Logout</span>
+          </button>
         </div>
       </nav>
 
@@ -456,6 +590,7 @@ const Dashboard = () => {
         router={router}
         isLoading={isLoading}
         onSpaceDeleted={refreshSpaces}
+        onSpaceLeft={refreshRecentSpaces}
       />
     </div>
   );

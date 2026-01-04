@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 import Image from "next/image";
 
@@ -11,6 +11,8 @@ const Signup = () => {
   const [error, setError] = useState<string>("");
 
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get("redirect");
 
   const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -24,7 +26,9 @@ const Signup = () => {
       );
 
       if (response.status === 201) {
-        router.push("/login");
+        // Redirect to login with the same redirect parameter if it exists
+        const loginUrl = redirect ? `/login?redirect=${encodeURIComponent(redirect)}` : "/login";
+        router.push(loginUrl);
       }
     } catch (err: any) {
       setError(err.response?.data?.message || "Signup failed");
@@ -103,7 +107,7 @@ const Signup = () => {
         <p className="text-gray-600 mt-6 text-sm">
           Already have an account?{" "}
           <a
-            href="/login"
+            href={redirect ? `/login?redirect=${encodeURIComponent(redirect)}` : "/login"}
             className="text-teal-600 font-semibold hover:underline"
           >
             Sign In

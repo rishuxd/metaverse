@@ -18,6 +18,13 @@ const getRecentSpaces = async (req: Request, res: Response): Promise<void> => {
         space: {
           include: {
             map: true,
+            creator: {
+              select: {
+                id: true,
+                username: true,
+                avatarId: true,
+              },
+            },
           },
         },
       },

@@ -12,13 +12,18 @@ import { Camera } from "@/utils/Camera";
 import { RemoteUser } from "@/objects/RemoteUser";
 import { VideoOverlay } from "@/components/video";
 import axios from "axios";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import ChatPanel from "@/components/chat";
 import { loadImage } from "@/helpers/loadImage";
 import { walls } from "@/levels/level1";
+import { getAuthToken } from "@/utils/auth";
+import { Share2, Check } from "lucide-react";
 
-export default function Page() {
+export default function SpacePage() {
   const router = useRouter();
+  const params = useParams();
+  const spaceId = params.spaceId;
+
   const wsRef = useRef(null);
   const canvasRef = useRef(null);
   const mainSceneRef = useRef(null);
@@ -28,12 +33,11 @@ export default function Page() {
   const [space, setSpace] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
 
   // Initialize WebSocket connection and fetch space data
   useEffect(() => {
-    const url = new URL(window.location.href);
-    const token = localStorage.getItem("token");
-    const spaceId = url.searchParams.get("spaceId");
+    const token = getAuthToken();
 
     if (!token || !spaceId) {
       setIsLoading(false);
@@ -97,7 +101,7 @@ export default function Page() {
         gameLoopRef.current.stop();
       }
     };
-  }, []);
+  }, [spaceId]);
 
   // Initialize game after space data is loaded
   useEffect(() => {
@@ -259,6 +263,14 @@ export default function Page() {
     initializeGame();
   }, [space, isLoading]);
 
+  const handleCopyLink = () => {
+    const shareUrl = `${window.location.origin}/space/${spaceId}`;
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
   const handleWebSocketMessage = async (message) => {
     const mainScene = mainSceneRef.current;
     if (!mainScene) return;
@@ -381,7 +393,7 @@ export default function Page() {
           onClick={() => router.push("/dashboard")}
         >
           <img
-            src="rec.png"
+            src="/rec.png"
             alt="logo"
             width={20}
             style={{
@@ -396,11 +408,24 @@ export default function Page() {
 
       {isConnected && userId && (
         <>
-          <ChatPanel
-            wsConnection={wsRef.current}
-            userId={userId}
-            mainScene={mainSceneRef.current}
-          />
+          <div className="absolute top-2 right-2 flex gap-2">
+            <div
+              className="flex items-center px-3 py-2 text-white bg-black bg-opacity-50 rounded-lg transition-all hover:bg-opacity-60 cursor-pointer"
+              onClick={handleCopyLink}
+              title="Copy invite link"
+            >
+              {copied ? (
+                <Check size={16} className="text-green-400" />
+              ) : (
+                <Share2 size={16} />
+              )}
+            </div>
+            <ChatPanel
+              wsConnection={wsRef.current}
+              userId={userId}
+              mainScene={mainSceneRef.current}
+            />
+          </div>
           <VideoOverlay
             wsConnection={wsRef.current}
             userId={userId}

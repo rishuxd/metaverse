@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 import Image from "next/image";
 
@@ -10,6 +10,8 @@ const Login = () => {
   const [password, setPassword] = useState<string>("");
   const [error, setError] = useState<string>("");
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get("redirect");
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -23,10 +25,17 @@ const Login = () => {
       );
 
       if (response.status === 200) {
-        localStorage.setItem("token", response.data.data.token);
+        const token = response.data.data.token;
+
+        // Store token in cookie only (7 days expiry)
+        document.cookie = `token=${token}; path=/; max-age=${60 * 60 * 24 * 7}`;
+
+        // Store user info in localStorage for UI display
         localStorage.setItem("username", response.data.data.username);
         localStorage.setItem("avatarUrl", response.data.data.avatarUrl);
-        router.push("/dashboard");
+
+        // Redirect to original page or dashboard
+        router.push(redirect || "/dashboard");
       }
     } catch (err: any) {
       setError(err?.message || "Login failed");
@@ -104,7 +113,10 @@ const Login = () => {
         </form>
         <p className="text-gray-600 mt-6 text-sm">
           Don't have an account?{" "}
-          <a href="/signup" className="text-teal-600 font-semibold hover:underline">
+          <a
+            href={redirect ? `/signup?redirect=${encodeURIComponent(redirect)}` : "/signup"}
+            className="text-teal-600 font-semibold hover:underline"
+          >
             Sign Up
           </a>
         </p>

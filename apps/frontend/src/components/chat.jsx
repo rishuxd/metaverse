@@ -128,7 +128,7 @@ const ChatPanel = ({ wsConnection, userId, mainScene }) => {
   };
 
   return (
-    <div className="absolute top-2 right-2 flex gap-2">
+    <>
       <div className="flex items-center gap-2 p-2 text-white bg-black bg-opacity-50 rounded-lg transition-all ">
         {localStorage.getItem("username")}
       </div>
@@ -137,6 +137,7 @@ const ChatPanel = ({ wsConnection, userId, mainScene }) => {
         className="flex items-center gap-2 px-3 py-2 text-white bg-black bg-opacity-50 rounded-lg transition-all hover:bg-opacity-60"
       >
         <MessageSquareText size={20} />
+        <span>Chat</span>
       </button>
 
       {isOpen && (
@@ -230,7 +231,7 @@ const ChatPanel = ({ wsConnection, userId, mainScene }) => {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };
 

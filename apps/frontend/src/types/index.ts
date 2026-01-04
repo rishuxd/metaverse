@@ -14,6 +14,11 @@ export type Space = {
   mapId: string;
   creatorId: string;
   map: Map;
+  creator?: {
+    id: string;
+    username: string;
+    avatarId?: string;
+  };
 };
 
 export type RecentSpace = {
