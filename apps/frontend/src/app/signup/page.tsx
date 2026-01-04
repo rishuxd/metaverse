@@ -58,51 +58,55 @@ const Signup = () => {
             }}
           />
         </div>
-        <h1 className="mb-6 text-black">Welcome to Rishu's Town</h1>
-        <form onSubmit={handleSignup} className="flex flex-col gap-6 w-full">
-          <div className="flex flex-col">
-            <label htmlFor="username" className="text-gray-700 text-sm">
+        <h1 className="mb-6 text-2xl font-bold text-gray-900">Create Account</h1>
+        <form onSubmit={handleSignup} className="flex flex-col gap-5 w-full">
+          <div className="flex flex-col gap-2">
+            <label htmlFor="username" className="text-gray-700 text-sm font-medium">
               Username
             </label>
             <input
               id="username"
-              className="rounded-lg p-3 text-black border-gray-500 border-2 focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 transition-all text-sm"
+              className="rounded-xl p-3 text-gray-900 border-gray-300 border-2 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600 transition-all"
               type="text"
-              placeholder="Enter your username"
+              placeholder="Choose a username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
             />
           </div>
-          <div className="flex flex-col mb-8">
-            <label htmlFor="password" className="text-gray-700 text-sm">
+          <div className="flex flex-col gap-2">
+            <label htmlFor="password" className="text-gray-700 text-sm font-medium">
               Password
             </label>
             <input
               id="password"
-              className="rounded-lg p-3 text-black border-gray-700 border-2 focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 transition-all text-sm"
+              className="rounded-xl p-3 text-gray-900 border-gray-300 border-2 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600 transition-all"
               type="password"
-              placeholder="Enter your password"
+              placeholder="Create a password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
             />
           </div>
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
+              {error}
+            </div>
+          )}
           <button
-            className="rounded-lg py-3 px-5 bg-teal-400 text-gray-900 font-semibold hover:bg-teal-600 transition-all"
+            className="rounded-xl py-3 px-5 bg-teal-600 text-white font-semibold hover:bg-teal-700 transition-all shadow-lg mt-2"
             type="submit"
           >
-            Signup Yourself
+            Sign Up
           </button>
         </form>
-        {error && <p className="text-red-500 mt-4">{error}</p>}
         <p className="text-gray-600 mt-6 text-sm">
           Already have an account?{" "}
           <a
             href="/login"
-            className="text-teal-700 font-semibold hover:underline"
+            className="text-teal-600 font-semibold hover:underline"
           >
-            Login
+            Sign In
           </a>
         </p>
       </div>

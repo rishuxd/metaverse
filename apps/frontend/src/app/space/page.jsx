@@ -32,7 +32,7 @@ export default function Page() {
   // Initialize WebSocket connection and fetch space data
   useEffect(() => {
     const url = new URL(window.location.href);
-    const token = url.searchParams.get("token");
+    const token = localStorage.getItem("token");
     const spaceId = url.searchParams.get("spaceId");
 
     if (!token || !spaceId) {

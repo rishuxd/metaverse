@@ -69,8 +69,8 @@ const MySpace = ({ title, spaces, token, router, msg, onSpaceDeleted }) => {
   };
 
   return (
-    <section className="space-y-4">
-      <h2 className="text-xl font-semibold">{title}</h2>
+    <section className="space-y-6">
+      <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
       {spaces?.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {spaces.map((space) => (
@@ -78,7 +78,7 @@ const MySpace = ({ title, spaces, token, router, msg, onSpaceDeleted }) => {
               <div
                 className="relative aspect-video bg-black rounded-lg shadow-lg overflow-hidden cursor-pointer transition-transform duration-200 hover:scale-105"
                 onClick={() =>
-                  router.push(`/space?spaceId=${space?.id}&token=${token}`)
+                  router.push(`/space?spaceId=${space?.id}`)
                 }
               >
                 <img
@@ -119,25 +119,25 @@ const MySpace = ({ title, spaces, token, router, msg, onSpaceDeleted }) => {
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent className="p-7">
-          <DialogTitle>Delete Space</DialogTitle>
-          <div className="mt-2">
+          <DialogTitle className="text-xl font-bold">Delete Space</DialogTitle>
+          <div className="mt-4">
             <p className="text-sm text-gray-600">
               Are you sure you want to delete <span className="font-semibold">{spaceToDelete?.name}</span>? This action cannot be undone.
             </p>
           </div>
-          <div className="flex gap-3 mt-2">
+          <div className="flex gap-3 mt-6">
             <button
               onClick={() => setDeleteDialogOpen(false)}
-              className="flex-1 bg-gray-200 text-gray-800 rounded-xl py-2 hover:bg-gray-300 transition-all"
+              className="flex-1 bg-gray-200 text-gray-800 rounded-xl py-3 font-semibold hover:bg-gray-300 transition-all"
             >
               Cancel
             </button>
             <button
               onClick={handleDeleteSpace}
               disabled={deletingId === spaceToDelete?.id}
-              className="flex-1 bg-red-600 text-white rounded-xl py-2 hover:bg-red-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 bg-red-600 text-white rounded-xl py-3 font-semibold hover:bg-red-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {deletingId === spaceToDelete?.id ? "Deleting..." : "Delete"}
+              {deletingId === spaceToDelete?.id ? "Deleting..." : "Delete Space"}
             </button>
           </div>
         </DialogContent>
@@ -147,8 +147,8 @@ const MySpace = ({ title, spaces, token, router, msg, onSpaceDeleted }) => {
 };
 
 const RecentSpace = ({ title, spaces, token, router, msg }) => (
-  <section className="space-y-4">
-    <h2 className="text-xl font-semibold">{title}</h2>
+  <section className="space-y-6">
+    <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
     {spaces?.length > 0 ? (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {spaces.map((space) => (
@@ -156,7 +156,7 @@ const RecentSpace = ({ title, spaces, token, router, msg }) => (
             <div
               className="relative aspect-video bg-black rounded-lg shadow-lg overflow-hidden cursor-pointer transition-transform duration-200 hover:scale-105"
               onClick={() =>
-                router.push(`/space?spaceId=${space?.space?.id}&token=${token}`)
+                router.push(`/space?spaceId=${space?.space?.id}`)
               }
             >
               <img

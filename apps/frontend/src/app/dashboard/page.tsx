@@ -310,8 +310,9 @@ const Dashboard = () => {
                 </button>
               </DialogTrigger>
               <DialogContent className="p-7">
-                <DialogTitle>How do you want to look?</DialogTitle>
-                <div className="grid grid-cols-3 gap-4 mt-4">
+                <DialogTitle className="text-xl font-bold">Choose Your Avatar</DialogTitle>
+                <p className="text-sm text-gray-600 mt-1">Select an avatar to represent you</p>
+                <div className="grid grid-cols-3 gap-4 mt-6">
                   {avatars.map((avatar) => (
                     <div
                       key={avatar.id}
@@ -349,9 +350,9 @@ const Dashboard = () => {
                 <button
                   disabled={selectedAvatar === null}
                   onClick={handleSaveAvatar}
-                  className="w-full mt-6 bg-third text-white rounded-xl py-2 hover:bg-fourth transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-third"
+                  className="w-full mt-6 bg-teal-600 text-white rounded-xl py-3 font-semibold hover:bg-teal-700 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <p className="font-semibold">Save</p>
+                  Save Avatar
                 </button>
               </DialogContent>
             </Dialog>
@@ -366,7 +367,7 @@ const Dashboard = () => {
           </button>
           <Dialog open={isCreateSpaceDialogOpen} onOpenChange={handleDialogOpenChange}>
             <DialogTrigger asChild>
-              <button className="rounded-lg flex gap-2 py-2 px-4 bg-third font-semibold hover:bg-fourth transition-all">
+              <button className="rounded-lg flex gap-2 py-2 px-4 bg-teal-600 text-white font-semibold hover:bg-teal-700 transition-all">
                 <PlusCircle size={20} className="mt-[1px]" />
                 Create Space
               </button>
@@ -374,8 +375,9 @@ const Dashboard = () => {
             <DialogContent className="p-7">
               {!selectedMap ? (
                 <>
-                  <DialogTitle>What are you looking to do here?</DialogTitle>
-                  <div className="flex flex-col gap-6 mt-4">
+                  <DialogTitle className="text-xl font-bold">Choose a Map</DialogTitle>
+                  <p className="text-sm text-gray-600 mt-1">Select a map template for your new space</p>
+                  <div className="flex flex-col gap-4 mt-6">
                     {maps.map((map) => (
                       <div
                         key={map.id}
@@ -401,44 +403,43 @@ const Dashboard = () => {
                 </>
               ) : (
                 <>
-                  <div className="flex items-center justify-between px-1">
-                    <DialogTitle>
-                      What would be the space of your name?
-                    </DialogTitle>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <DialogTitle className="text-xl font-bold">Name Your Space</DialogTitle>
+                      <p className="text-sm text-gray-600 mt-1">Give your space a unique name</p>
+                    </div>
                     <button
                       onClick={() => setSelectedMap(null)}
-                      className="rounded-full bg-fourth p-1 hover:bg-fifth transition-all"
+                      className="rounded-xl bg-fourth p-2 hover:bg-fifth transition-all"
                     >
-                      <ArrowLeft size={18} />
+                      <ArrowLeft size={20} />
                     </button>
                   </div>
-                  <div className="flex flex-col gap-6 mt-4">
+                  <div className="flex flex-col gap-4 mt-6">
                     <input
                       type="text"
-                      className="bg-fourth rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 "
+                      className="rounded-xl p-3 text-gray-900 border-gray-300 border-2 focus:outline-none focus:ring-2 focus:ring-third focus:border-third transition-all"
                       placeholder="Enter space name"
                       value={spaceName}
                       onChange={(e) => setSpaceName(e.target.value)}
                       disabled={isCreatingSpace}
                     />
                     {successMessage && (
-                      <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-xl">
+                      <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl">
                         <p className="text-sm font-medium">{successMessage}</p>
                       </div>
                     )}
                     {error && (
-                      <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl">
+                      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl">
                         <p className="text-sm font-medium">{error}</p>
                       </div>
                     )}
                     <button
                       disabled={spaceName === "" || isCreatingSpace}
                       onClick={handleCreateSpace}
-                      className="bg-third text-white rounded-xl py-2 hover:bg-fourth transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-third"
+                      className="bg-teal-600 text-white rounded-xl py-3 font-semibold hover:bg-teal-700 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <p className="font-semibold">
-                        {isCreatingSpace ? "Creating..." : "Create Space [NEW VERSION]"}
-                      </p>
+                      {isCreatingSpace ? "Creating..." : "Create Space"}
                     </button>
                   </div>
                 </>

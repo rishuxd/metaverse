@@ -60,15 +60,15 @@ const Login = () => {
             }}
           />
         </div>
-        <h1 className="mb-6 text-black">Welcome Back to Rishu's Town</h1>
-        <form onSubmit={handleLogin} className="flex flex-col gap-6 w-full">
-          <div className="flex flex-col">
-            <label htmlFor="username" className="text-gray-700 text-sm">
+        <h1 className="mb-6 text-2xl font-bold text-gray-900">Welcome Back</h1>
+        <form onSubmit={handleLogin} className="flex flex-col gap-5 w-full">
+          <div className="flex flex-col gap-2">
+            <label htmlFor="username" className="text-gray-700 text-sm font-medium">
               Username
             </label>
             <input
               id="username"
-              className="rounded-lg p-3 text-black border-gray-700 border-2 focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 transition-all text-sm"
+              className="rounded-xl p-3 text-gray-900 border-gray-300 border-2 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600 transition-all"
               type="text"
               placeholder="Enter your username"
               value={username}
@@ -76,13 +76,13 @@ const Login = () => {
               required
             />
           </div>
-          <div className="flex flex-col mb-8">
-            <label htmlFor="password" className="text-gray-700 text-sm">
+          <div className="flex flex-col gap-2">
+            <label htmlFor="password" className="text-gray-700 text-sm font-medium">
               Password
             </label>
             <input
               id="password"
-              className="rounded-lg p-3 border-gray-700 border-2 focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 transition-all text-sm text-black"
+              className="rounded-xl p-3 border-gray-300 border-2 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600 transition-all text-gray-900"
               type="password"
               placeholder="Enter your password"
               value={password}
@@ -90,18 +90,22 @@ const Login = () => {
               required
             />
           </div>
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
+              {error}
+            </div>
+          )}
           <button
-            className="rounded-lg py-3 px-5 bg-teal-400 text-gray-900 font-semibold hover:bg-teal-600 transition-all"
+            className="rounded-xl py-3 px-5 bg-teal-600 text-white font-semibold hover:bg-teal-700 transition-all shadow-lg mt-2"
             type="submit"
           >
-            Login Yourself
+            Sign In
           </button>
         </form>
-        {error && <p className="text-red-500 mt-4">{error}</p>}
         <p className="text-gray-600 mt-6 text-sm">
           Don't have an account?{" "}
-          <a href="/signup" className="text-teal-700 font-semibold ">
-            Signup
+          <a href="/signup" className="text-teal-600 font-semibold hover:underline">
+            Sign Up
           </a>
         </p>
       </div>
