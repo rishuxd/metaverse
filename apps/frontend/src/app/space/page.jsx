@@ -106,6 +106,12 @@ export default function Page() {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
 
+    // Disable image smoothing for crisp pixel art at all zoom levels
+    ctx.imageSmoothingEnabled = false;
+    ctx.webkitImageSmoothingEnabled = false;
+    ctx.mozImageSmoothingEnabled = false;
+    ctx.msImageSmoothingEnabled = false;
+
     const mainScene = new GameObject({
       position: new Vector2(0, 0),
     });
@@ -113,20 +119,71 @@ export default function Page() {
 
     async function initializeGame() {
       try {
+        // Fullscreen viewport
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        canvas.width = viewportWidth;
+        canvas.height = viewportHeight;
+
+        // Handle window resize
+        const handleResize = () => {
+          canvas.width = window.innerWidth;
+          canvas.height = window.innerHeight;
+          if (camera) {
+            camera.canvasWidth = window.innerWidth;
+            camera.canvasHeight = window.innerHeight;
+          }
+        };
+        window.addEventListener('resize', handleResize);
+
         const mapImage = await loadImage(
           `${process.env.NEXT_PUBLIC_BASE_URL}${space.map.imageUrl}`
         );
 
         const mapSprite = new Sprite({
           resource: mapImage,
-          frameSize: new Vector2(gridCells(30), gridCells(20)),
+          frameSize: new Vector2(gridCells(space.map.width), gridCells(space.map.height)),
         });
         mainScene.addChild(mapSprite);
 
         // Initialize camera and input
-        const camera = new Camera();
+        const camera = new Camera(viewportWidth, viewportHeight, space.map.width, space.map.height);
         mainScene.addChild(camera);
         mainScene.input = new Input();
+
+        // Add zoom controls
+        const handleWheel = (e) => {
+          e.preventDefault();
+          const zoomDirection = e.deltaY > 0 ? -1 : 1;
+          camera.adjustZoom(zoomDirection);
+        };
+
+        // Add pan controls (drag to pan)
+        const handleMouseDown = (e) => {
+          if (e.button === 0) { // Left click
+            camera.startPan(e.clientX, e.clientY);
+            canvas.style.cursor = 'grabbing';
+          }
+        };
+
+        const handleMouseMove = (e) => {
+          if (camera.isPanning) {
+            camera.updatePan(e.clientX, e.clientY);
+          }
+        };
+
+        const handleMouseUp = (e) => {
+          if (camera.isPanning) {
+            camera.endPan();
+            canvas.style.cursor = 'default';
+          }
+        };
+
+        canvas.addEventListener('wheel', handleWheel, { passive: false });
+        canvas.addEventListener('mousedown', handleMouseDown);
+        canvas.addEventListener('mousemove', handleMouseMove);
+        canvas.addEventListener('mouseup', handleMouseUp);
+        canvas.addEventListener('mouseleave', handleMouseUp);
 
         // Start game loop
         const update = (delta) => {
@@ -134,7 +191,31 @@ export default function Page() {
         };
 
         const draw = () => {
-          mainScene.draw(ctx, 0, 0);
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+          // Apply camera transformations
+          ctx.save();
+
+          // Ensure image smoothing is disabled for crisp pixels
+          ctx.imageSmoothingEnabled = false;
+          ctx.webkitImageSmoothingEnabled = false;
+          ctx.mozImageSmoothingEnabled = false;
+          ctx.msImageSmoothingEnabled = false;
+
+          // Apply zoom (from center of canvas)
+          if (camera.zoom !== 1.0) {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            ctx.translate(centerX, centerY);
+            ctx.scale(camera.zoom, camera.zoom);
+            ctx.translate(-centerX, -centerY);
+          }
+
+          // Draw the scene, but use camera position as the starting offset
+          // This makes the camera position control where we're looking
+          mainScene.draw(ctx, camera.position.x, camera.position.y);
+
+          ctx.restore();
         };
 
         const gameLoop = new GameLoop(update, draw);
@@ -251,12 +332,17 @@ export default function Page() {
       </div>
     </div>
   ) : (
-    <div className="relative">
+    <div className="fixed inset-0 w-full h-full overflow-hidden bg-green-100">
       <canvas
         ref={canvasRef}
         id="game-canvas"
-        width={gridCells(30)}
-        height={gridCells(20)}
+        style={{
+          display: 'block',
+          backgroundColor: '#d1fae5',
+          imageRendering: 'pixelated',
+          imageRendering: '-moz-crisp-edges',
+          imageRendering: 'crisp-edges',
+        }}
       />
 
       <div className="absolute top-2 left-2 flex gap-2">
