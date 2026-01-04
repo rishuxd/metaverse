@@ -29,7 +29,7 @@ const Login = () => {
         router.push("/dashboard");
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || "Login failed");
+      setError(err?.message || "Login failed");
     }
   };
 

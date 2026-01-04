@@ -3,9 +3,9 @@
 @tailwind utilities;
 
 body {
-  color: #e5e7eb;
+  color: #1f2937;
   font-family: "Montserrat", serif;
-  background: #0c0d14;
+  background: #f9fafb;
   scroll-behavior: smooth;
   image-rendering: pixelated;
 }
@@ -31,11 +31,11 @@ canvas {
 
 @layer base {
   :root {
-    --first: #0c0d14;
-    --second: #1f2030;
+    --first: #f9fafb;
+    --second: #ffffff;
     --third: #6842ff;
-    --fourth: #373952;
-    --fifth: #363745;
+    --fourth: #e5e7eb;
+    --fifth: #f3f4f6;
     --background: 0 0% 100%;
     --foreground: 0 0% 3.9%;
     --card: 0 0% 100%;

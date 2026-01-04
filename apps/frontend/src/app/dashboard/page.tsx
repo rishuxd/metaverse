@@ -21,12 +21,15 @@ const Dashboard = () => {
   const [recentSpaces, setRecentSpaces] = useState<RecentSpace[]>([]);
   const [avatars, setAvatars] = useState<Avatar[]>([]);
 
-  const [selectedMap, setSelectedMap] = useState<String | null>(null);
-  const [selectedAvatar, setSelectedAvatar] = useState<String | null>(null);
+  const [selectedMap, setSelectedMap] = useState<string | null>(null);
+  const [selectedAvatar, setSelectedAvatar] = useState<string | null>(null);
   const [spaceName, setSpaceName] = useState<string>("");
-  const [error, setError] = useState<String | null>(null);
-  const [isLoading, setIsLoading] = useState<Boolean>(true);
-  const [token, setToken] = useState<String | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isCreatingSpace, setIsCreatingSpace] = useState<boolean>(false);
+  const [isCreateSpaceDialogOpen, setIsCreateSpaceDialogOpen] = useState<boolean>(false);
+  const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -148,7 +151,35 @@ const Dashboard = () => {
     };
   }, []);
 
+  const refreshSpaces = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/space/all`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (response.status === 200) {
+        setSpaces(response.data.data.spaces);
+        console.log("Spaces refreshed 1");
+      }
+    } catch (error) {
+      console.error("Failed to refresh spaces:", error);
+    }
+  };
+
   const handleCreateSpace = async () => {
+    if (isCreatingSpace) return;
+
+    setIsCreatingSpace(true);
+    setError(null);
+    setSuccessMessage(null);
+
     try {
       const token = localStorage.getItem("token");
 
@@ -165,17 +196,36 @@ const Dashboard = () => {
         }
       );
 
-      if (response.status === 201) {
-        setSpaces([...spaces, response.data.data.space]);
-        setSpaceName("");
-        setSelectedMap(null);
+      if (response.status === 200 || response.status === 201) {
+        // Show success message
+        setSuccessMessage("Space created successfully!");
+
+        // Refresh the spaces list immediately
+        await refreshSpaces();
+
+        // Wait 1.5 seconds to show success message, then close
+        setTimeout(() => {
+          setIsCreateSpaceDialogOpen(false);
+        }, 1500);
       }
     } catch (error) {
       console.error("Failed to create space:", error);
       setError("Failed to create space!");
+    } finally {
+      setIsCreatingSpace(false);
     }
+  };
 
-    return;
+  const handleDialogOpenChange = (open: boolean) => {
+    setIsCreateSpaceDialogOpen(open);
+
+    // Reset form when dialog closes
+    if (!open) {
+      setSpaceName("");
+      setSelectedMap(null);
+      setSuccessMessage(null);
+      setError(null);
+    }
   };
 
   const handleLogout = () => {
@@ -314,7 +364,7 @@ const Dashboard = () => {
             <LogOut size={18} />
             <span>Logout</span>
           </button>
-          <Dialog>
+          <Dialog open={isCreateSpaceDialogOpen} onOpenChange={handleDialogOpenChange}>
             <DialogTrigger asChild>
               <button className="rounded-lg flex gap-2 py-2 px-4 bg-third font-semibold hover:bg-fourth transition-all">
                 <PlusCircle size={20} className="mt-[1px]" />
@@ -369,13 +419,26 @@ const Dashboard = () => {
                       placeholder="Enter space name"
                       value={spaceName}
                       onChange={(e) => setSpaceName(e.target.value)}
+                      disabled={isCreatingSpace}
                     />
+                    {successMessage && (
+                      <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-xl">
+                        <p className="text-sm font-medium">{successMessage}</p>
+                      </div>
+                    )}
+                    {error && (
+                      <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl">
+                        <p className="text-sm font-medium">{error}</p>
+                      </div>
+                    )}
                     <button
-                      disabled={spaceName === ""}
+                      disabled={spaceName === "" || isCreatingSpace}
                       onClick={handleCreateSpace}
                       className="bg-third text-white rounded-xl py-2 hover:bg-fourth transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-third"
                     >
-                      <p className="font-semibold">Create Space</p>
+                      <p className="font-semibold">
+                        {isCreatingSpace ? "Creating..." : "Create Space [NEW VERSION]"}
+                      </p>
                     </button>
                   </div>
                 </>
@@ -391,6 +454,7 @@ const Dashboard = () => {
         token={token}
         router={router}
         isLoading={isLoading}
+        onSpaceDeleted={refreshSpaces}
       />
     </div>
   );
