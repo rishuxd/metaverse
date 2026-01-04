@@ -8,7 +8,7 @@ export class Camera extends GameObject {
 
     this.zoom = 1.0;
     this.minZoom = 0.5;
-    this.maxZoom = 2.0;
+    this.maxZoom = 3.0;
     this.canvasWidth = canvasWidth;
     this.canvasHeight = canvasHeight;
     this.mapWidth = mapWidth * 16; // Convert grid cells to pixels
@@ -51,7 +51,7 @@ export class Camera extends GameObject {
 
   adjustZoom(direction) {
     // Snap to specific zoom levels for pixel-perfect rendering
-    const zoomLevels = [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0];
+    const zoomLevels = [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0];
 
     // Find current zoom index
     const currentIndex = zoomLevels.findIndex(level => level === this.zoom);
