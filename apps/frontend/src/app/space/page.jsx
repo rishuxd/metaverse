@@ -148,6 +148,15 @@ export default function Page() {
 
         // Initialize camera and input
         const camera = new Camera(viewportWidth, viewportHeight, space.map.width, space.map.height);
+
+        // Center the map initially before hero spawns
+        const mapWidthPixels = space.map.width * 16;
+        const mapHeightPixels = space.map.height * 16;
+        camera.position = new Vector2(
+          (viewportWidth - mapWidthPixels) / 2,
+          (viewportHeight - mapHeightPixels) / 2
+        );
+
         mainScene.addChild(camera);
         mainScene.input = new Input();
 
@@ -159,24 +168,43 @@ export default function Page() {
         };
 
         // Add pan controls (drag to pan)
+        let mouseDownPos = null;
+        let hasDragged = false;
+
         const handleMouseDown = (e) => {
           if (e.button === 0) { // Left click
-            camera.startPan(e.clientX, e.clientY);
-            canvas.style.cursor = 'grabbing';
+            mouseDownPos = { x: e.clientX, y: e.clientY };
+            hasDragged = false;
           }
         };
 
         const handleMouseMove = (e) => {
-          if (camera.isPanning) {
-            camera.updatePan(e.clientX, e.clientY);
+          if (mouseDownPos) {
+            // Check if user has dragged a minimum distance (to distinguish from click)
+            const dx = e.clientX - mouseDownPos.x;
+            const dy = e.clientY - mouseDownPos.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (!hasDragged && distance > 5) {
+              // User started dragging
+              hasDragged = true;
+              camera.startPan(mouseDownPos.x, mouseDownPos.y);
+              canvas.style.cursor = 'grabbing';
+            }
+
+            if (hasDragged) {
+              camera.updatePan(e.clientX, e.clientY);
+            }
           }
         };
 
         const handleMouseUp = (e) => {
-          if (camera.isPanning) {
+          if (hasDragged && camera.isPanning) {
             camera.endPan();
             canvas.style.cursor = 'default';
           }
+          mouseDownPos = null;
+          hasDragged = false;
         };
 
         canvas.addEventListener('wheel', handleWheel, { passive: false });
@@ -191,7 +219,9 @@ export default function Page() {
         };
 
         const draw = () => {
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          // Fill with background color before drawing
+          ctx.fillStyle = '#d1fae5';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
 
           // Apply camera transformations
           ctx.save();

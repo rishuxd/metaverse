@@ -20,16 +20,31 @@ export class Camera extends GameObject {
     this.lastHeroPosition = null;
 
     events.on("HERO_POSITION", this, (heroPosition) => {
-      this.lastHeroPosition = heroPosition;
+      const personHalf = 8;
+      const halfWidth = -personHalf + this.canvasWidth / 2;
+      const halfHeight = -personHalf + this.canvasHeight / 2;
+
+      const targetX = -heroPosition.x + halfWidth;
+      const targetY = -heroPosition.y + halfHeight;
+
+      // Check if hero moved (if user is controlling the character)
+      if (this.lastHeroPosition &&
+          (this.lastHeroPosition.x !== heroPosition.x || this.lastHeroPosition.y !== heroPosition.y)) {
+        // Hero moved! Resume following with smooth transition
+        this.isFollowingHero = true;
+      }
+
+      this.lastHeroPosition = { x: heroPosition.x, y: heroPosition.y };
 
       if (this.isFollowingHero) {
-        const personHalf = 8;
-        const halfWidth = -personHalf + this.canvasWidth / 2;
-        const halfHeight = -personHalf + this.canvasHeight / 2;
-        this.position = new Vector2(
-          -heroPosition.x + halfWidth + this.manualOffset.x,
-          -heroPosition.y + halfHeight + this.manualOffset.y
-        );
+        // When actively following, center camera on hero with smooth interpolation
+        if (!this.position) {
+          this.position = new Vector2(targetX, targetY);
+        } else {
+          const smoothing = 0.05; // Smooth transition (0.05 = very smooth, 1 = instant)
+          this.position.x += (targetX - this.position.x) * smoothing;
+          this.position.y += (targetY - this.position.y) * smoothing;
+        }
       }
     });
   }
