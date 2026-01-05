@@ -30,6 +30,7 @@ interface ChatMessage {
 function generateSpawnLocation(width: number, height: number, walls: string[]) {
   const x = Math.floor(Math.random() * width);
   const y = Math.floor(Math.random() * height);
+  console.log(`Generated spawn location: (${x}, ${y})`);
   if (!walls.includes(x + "," + y)) return { x, y };
   return generateSpawnLocation(width, height, walls);
 }
@@ -53,7 +54,7 @@ export class User {
   init() {
     this.ws.on("message", async (data) => {
       const parsedData = JSON.parse(data.toString());
-      console.log("Received message: ", parsedData);
+      // console.log("Received message: ", parsedData);
 
       switch (parsedData.type) {
         case "join":
@@ -253,8 +254,10 @@ export class User {
   }
 
   private handleMove(payload: { x: number; y: number }) {
-    this.x = payload.x;
-    this.y = payload.y;
+    // Convert pixels back to grid units for consistent storage
+    // Hero sends pixel coordinates, but server stores grid units
+    this.x = Math.round(payload.x / 16);
+    this.y = Math.round(payload.y / 16);
 
     RoomManager.getInstance().broadcastToRoom(this.spaceId!, this, {
       type: "movement",

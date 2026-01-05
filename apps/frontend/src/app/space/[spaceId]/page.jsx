@@ -1,15 +1,6 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { Sprite } from "@/utils/Sprite";
-import { Vector2 } from "@/utils/Vector2";
-import { GameLoop } from "@/utils/GameLoop";
-import { Input } from "@/utils/Input";
-import { gridCells } from "@/helpers/grid";
-import { GameObject } from "@/utils/GameObject";
-import { Hero } from "@/objects/Hero/Hero";
-import { Camera } from "@/utils/Camera";
-import { RemoteUser } from "@/objects/RemoteUser";
 import { VideoOverlay } from "@/components/video";
 import axios from "axios";
 import { useRouter, useParams } from "next/navigation";
@@ -19,6 +10,8 @@ import { walls } from "@/levels/level1";
 import { getAuthToken } from "@/utils/auth";
 import { Share2, Check } from "lucide-react";
 import SpaceLobbyOverlay from "@/components/lobby/SpaceLobbyOverlay";
+import { GameManager } from "@/utils/GameManager";
+import { events } from "@/utils/Events";
 
 export default function SpacePage() {
   const router = useRouter();
@@ -27,8 +20,6 @@ export default function SpacePage() {
 
   const wsRef = useRef(null);
   const canvasRef = useRef(null);
-  const mainSceneRef = useRef(null);
-  const gameLoopRef = useRef(null);
   const localVideoRef = useRef(null);
   const mediaStreamRef = useRef(null);
 
@@ -47,11 +38,13 @@ export default function SpacePage() {
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
   const [error, setError] = useState(null);
   const [loadingProgress, setLoadingProgress] = useState(0);
+  const [cachedMapImage, setCachedMapImage] = useState(null);
   const [loadingSteps, setLoadingSteps] = useState({
     spaceData: { status: 'loading', label: 'Fetching space...' },
     assets: { status: 'loading', label: 'Loading assets...' },
     media: { status: 'loading', label: 'Setting up media...' },
     avatars: { status: 'loading', label: 'Loading avatars...' },
+    connection: { status: 'loading', label: 'Connecting to server...' },
   });
 
   // Check if user has avatar
@@ -59,6 +52,32 @@ export default function SpacePage() {
     const avatarUrl = localStorage.getItem("avatarUrl");
     setHasAvatar(!!(avatarUrl && avatarUrl !== "null"));
   }, []);
+
+  // Set up game engine event listeners
+  useEffect(() => {
+    const handleUserIdSet = (userId) => {
+      setUserId(userId);
+    };
+
+    const handleGameReady = () => {
+      console.log("[GameManager] Game is ready");
+      setLoadingSteps((prev) => ({
+        ...prev,
+        connection: { status: 'success', label: 'Game ready!' },
+      }));
+    };
+
+    events.on("USER_ID_SET", null, handleUserIdSet);
+    events.on("GAME_READY", null, handleGameReady);
+
+    return () => {
+      events.off("USER_ID_SET");
+      events.off("GAME_READY");
+    };
+  }, []);
+
+  // Get GameManager singleton instance
+  const gameManager = GameManager.getInstance();
 
   // Lobby: Preload everything
   useEffect(() => {
@@ -77,7 +96,6 @@ export default function SpacePage() {
     .then((response) => {
       const spaceData = response.data.data.space;
       setSpace(spaceData);
-      walls.set("walls", spaceData.map.walls);
 
       setLoadingSteps((prev) => ({
         ...prev,
@@ -88,13 +106,42 @@ export default function SpacePage() {
 
       // Task 2: Preload map image
       loadImage(`${process.env.NEXT_PUBLIC_BASE_URL}${spaceData.map.imageUrl}`)
-        .then(() => {
+        .then(async (mapImage) => {
+          setCachedMapImage(mapImage);
           setLoadingSteps((prev) => ({
             ...prev,
             assets: { status: 'success', label: 'Assets loaded!' },
           }));
           progress += 25;
           setLoadingProgress(progress);
+
+          // Initialize GameManager with loaded assets (only once)
+          if (canvasRef.current && spaceData && !gameManager.isInitialized) {
+            try {
+              console.log("[SpacePage] Initializing GameManager with assets");
+
+              // Set up canvas size
+              const canvas = canvasRef.current;
+              canvas.width = window.innerWidth;
+              canvas.height = window.innerHeight;
+
+              // Initialize game with preloaded assets
+              await gameManager.initialize(canvas, spaceData, {
+                mapImage: mapImage
+              });
+
+              // Connect WebSocket to GameManager if available
+              if (wsRef.current) {
+                gameManager.connectWebSocket(wsRef.current);
+              }
+
+              console.log("[SpacePage] GameManager initialized with assets");
+            } catch (error) {
+              console.error("[SpacePage] GameManager initialization failed:", error);
+            }
+          } else if (gameManager.isInitialized) {
+            console.log("[SpacePage] GameManager already initialized, skipping");
+          }
         });
     })
     .catch((err) => {
@@ -164,235 +211,97 @@ export default function SpacePage() {
     };
   }, [spaceId, hasAvatar, showLobby]);
 
-  // Initialize WebSocket connection when joining from lobby
+  // Initialize WebSocket connection during lobby
   useEffect(() => {
-    if (showLobby) return; // Only run after lobby
-
     const token = getAuthToken();
-
     if (!token || !spaceId) {
-      setIsLoading(false);
       return;
     }
 
-    async function initialize() {
+    // Prevent multiple WebSocket connections
+    if (wsRef.current && wsRef.current.readyState !== WebSocket.CLOSED) {
+      console.log("[SpacePage] WebSocket already connected, skipping");
+      return;
+    }
+
+    async function initializeWebSocket() {
       try {
-        // First fetch space data
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/space/${spaceId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        setSpace(response.data.data.space);
-        walls.set("walls", response.data.data.space.map.walls);
-
-        // Then establish WebSocket connection
+        console.log("[SpacePage] Establishing WebSocket connection");
+        // Establish WebSocket connection
         wsRef.current = new WebSocket("ws://localhost:5001");
 
         wsRef.current.onopen = () => {
+          console.log("[SpacePage] WebSocket connected");
           setIsConnected(true);
-          wsRef.current.send(
-            JSON.stringify({
-              type: "join",
-              payload: {
-                spaceId,
-                token,
-              },
-            })
-          );
+          setLoadingSteps((prev) => ({
+            ...prev,
+            connection: { status: 'success', label: 'Ready to join!' },
+          }));
+          // Don't send join message yet - wait for user to click "Join Space"
         };
 
         wsRef.current.onclose = () => {
+          console.log("[SpacePage] WebSocket disconnected");
           setIsConnected(false);
+          setLoadingSteps((prev) => ({
+            ...prev,
+            connection: { status: 'error', label: 'Connection lost' },
+          }));
         };
 
         wsRef.current.onmessage = (event) => {
           const message = JSON.parse(event.data);
-          handleWebSocketMessage(message);
+          // GameManager singleton will handle the message
+          gameManager.handleWebSocketMessage(message);
         };
 
-        setIsLoading(false);
+        // Connect GameManager to WebSocket
+        gameManager.connectWebSocket(wsRef.current);
       } catch (error) {
-        console.error("Initialization error:", error);
-        setIsLoading(false);
+        console.error("WebSocket initialization error:", error);
+        setLoadingSteps((prev) => ({
+          ...prev,
+          connection: { status: 'error', label: 'Connection failed' },
+        }));
       }
     }
 
-    initialize();
+    initializeWebSocket();
 
     return () => {
-      if (wsRef.current) {
+      if (wsRef.current && wsRef.current.readyState !== WebSocket.CLOSED) {
+        console.log("[SpacePage] Closing WebSocket connection");
         wsRef.current.close();
       }
-      if (gameLoopRef.current) {
-        gameLoopRef.current.stop();
-      }
+      // Don't destroy GameManager here - it's managed by separate useEffect
     };
   }, [spaceId]);
 
-  // Initialize game after space data is loaded
+  // Reset GameManager when navigating away, destroy on unmount
   useEffect(() => {
-    if (!space || !canvasRef.current || isLoading) return;
+    return () => {
+      console.log("[SpacePage] Resetting GameManager for navigation");
+      gameManager.reset();
+    };
+  }, [spaceId]);
 
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
+  // Destroy singleton on component unmount
+  useEffect(() => {
+    return () => {
+      console.log("[SpacePage] Destroying GameManager singleton");
+      GameManager.destroyInstance();
+    };
+  }, []);
 
-    // Disable image smoothing for crisp pixel art at all zoom levels
-    ctx.imageSmoothingEnabled = false;
-    ctx.webkitImageSmoothingEnabled = false;
-    ctx.mozImageSmoothingEnabled = false;
-    ctx.msImageSmoothingEnabled = false;
+  // Handle window resize for GameManager
+  useEffect(() => {
+    const handleResize = () => {
+      gameManager.resize(window.innerWidth, window.innerHeight);
+    };
 
-    const mainScene = new GameObject({
-      position: new Vector2(0, 0),
-    });
-    mainSceneRef.current = mainScene;
-
-    async function initializeGame() {
-      try {
-        // Fullscreen viewport
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
-        canvas.width = viewportWidth;
-        canvas.height = viewportHeight;
-
-        // Handle window resize
-        const handleResize = () => {
-          canvas.width = window.innerWidth;
-          canvas.height = window.innerHeight;
-          if (camera) {
-            camera.canvasWidth = window.innerWidth;
-            camera.canvasHeight = window.innerHeight;
-          }
-        };
-        window.addEventListener('resize', handleResize);
-
-        const mapImage = await loadImage(
-          `${process.env.NEXT_PUBLIC_BASE_URL}${space.map.imageUrl}`
-        );
-
-        const mapSprite = new Sprite({
-          resource: mapImage,
-          frameSize: new Vector2(gridCells(space.map.width), gridCells(space.map.height)),
-        });
-        mainScene.addChild(mapSprite);
-
-        // Initialize camera and input
-        const camera = new Camera(viewportWidth, viewportHeight, space.map.width, space.map.height);
-
-        // Center the map initially before hero spawns
-        const mapWidthPixels = space.map.width * 16;
-        const mapHeightPixels = space.map.height * 16;
-        camera.position = new Vector2(
-          (viewportWidth - mapWidthPixels) / 2,
-          (viewportHeight - mapHeightPixels) / 2
-        );
-
-        mainScene.addChild(camera);
-        mainScene.input = new Input();
-
-        // Add zoom controls
-        const handleWheel = (e) => {
-          e.preventDefault();
-          const zoomDirection = e.deltaY > 0 ? -1 : 1;
-          camera.adjustZoom(zoomDirection);
-        };
-
-        // Add pan controls (drag to pan)
-        let mouseDownPos = null;
-        let hasDragged = false;
-
-        const handleMouseDown = (e) => {
-          if (e.button === 0) { // Left click
-            mouseDownPos = { x: e.clientX, y: e.clientY };
-            hasDragged = false;
-          }
-        };
-
-        const handleMouseMove = (e) => {
-          if (mouseDownPos) {
-            // Check if user has dragged a minimum distance (to distinguish from click)
-            const dx = e.clientX - mouseDownPos.x;
-            const dy = e.clientY - mouseDownPos.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-
-            if (!hasDragged && distance > 5) {
-              // User started dragging
-              hasDragged = true;
-              camera.startPan(mouseDownPos.x, mouseDownPos.y);
-              canvas.style.cursor = 'grabbing';
-            }
-
-            if (hasDragged) {
-              camera.updatePan(e.clientX, e.clientY);
-            }
-          }
-        };
-
-        const handleMouseUp = (e) => {
-          if (hasDragged && camera.isPanning) {
-            camera.endPan();
-            canvas.style.cursor = 'default';
-          }
-          mouseDownPos = null;
-          hasDragged = false;
-        };
-
-        canvas.addEventListener('wheel', handleWheel, { passive: false });
-        canvas.addEventListener('mousedown', handleMouseDown);
-        canvas.addEventListener('mousemove', handleMouseMove);
-        canvas.addEventListener('mouseup', handleMouseUp);
-        canvas.addEventListener('mouseleave', handleMouseUp);
-
-        // Start game loop
-        const update = (delta) => {
-          mainScene.stepEntry(delta, mainScene);
-        };
-
-        const draw = () => {
-          // Fill with background color before drawing
-          ctx.fillStyle = '#d1fae5';
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-          // Apply camera transformations
-          ctx.save();
-
-          // Ensure image smoothing is disabled for crisp pixels
-          ctx.imageSmoothingEnabled = false;
-          ctx.webkitImageSmoothingEnabled = false;
-          ctx.mozImageSmoothingEnabled = false;
-          ctx.msImageSmoothingEnabled = false;
-
-          // Apply zoom (from center of canvas)
-          if (camera.zoom !== 1.0) {
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
-            ctx.translate(centerX, centerY);
-            ctx.scale(camera.zoom, camera.zoom);
-            ctx.translate(-centerX, -centerY);
-          }
-
-          // Draw the scene, but use camera position as the starting offset
-          // This makes the camera position control where we're looking
-          mainScene.draw(ctx, camera.position.x, camera.position.y);
-
-          ctx.restore();
-        };
-
-        const gameLoop = new GameLoop(update, draw);
-        gameLoopRef.current = gameLoop;
-        gameLoop.start();
-      } catch (error) {
-        console.error("Game initialization error:", error);
-      }
-    }
-
-    initializeGame();
-  }, [space, isLoading]);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Lobby handlers
   const toggleAudio = () => {
@@ -441,14 +350,25 @@ export default function SpacePage() {
     const requiredSteps = [
       loadingSteps.spaceData.status === 'success',
       loadingSteps.assets.status === 'success',
+      loadingSteps.connection.status === 'success',
       hasAvatar,
+      gameManager.isReadyToJoin(),
     ];
     return requiredSteps.every(Boolean);
   };
 
   const handleJoinSpace = () => {
-    if (!canJoinSpace()) return;
-    // Hide lobby and start the space
+    if (!canJoinSpace()) {
+      return;
+    }
+
+    console.log("[SpacePage] Joining space - sending join message");
+
+    // NOW send the join message to server
+    const token = getAuthToken();
+    gameManager.joinSpace(spaceId, token);
+
+    // Hide lobby - character will spawn when server responds
     setShowLobby(false);
     setIsLoading(false);
   };
@@ -461,93 +381,7 @@ export default function SpacePage() {
     });
   };
 
-  const handleWebSocketMessage = async (message) => {
-    const mainScene = mainSceneRef.current;
-    if (!mainScene) return;
 
-    switch (message.type) {
-      case "space-joined":
-        const avatar = await loadImage(
-          `${process.env.NEXT_PUBLIC_BASE_URL}${message.payload.avatarUrl}`
-        );
-
-        const hero = new Hero(
-          gridCells(message.payload.spawn.x),
-          gridCells(message.payload.spawn.y),
-          wsRef.current,
-          message.payload.userId,
-          message.payload.username,
-          avatar
-        );
-        mainScene.addChild(hero);
-        setUserId(message.payload.userId);
-
-        if (message.payload.users) {
-          message.payload.users.forEach(async (user) => {
-            const avatar1 = await loadImage(
-              `${process.env.NEXT_PUBLIC_BASE_URL}${user.avatarUrl}`
-            );
-
-            const remoteUser = new RemoteUser(
-              gridCells(user.x),
-              gridCells(user.y),
-              user.userId,
-              user.username,
-              avatar1
-            );
-            mainScene.addChild(remoteUser);
-          });
-        }
-        break;
-
-      case "user-joined":
-        const result = await loadImage(
-          `${process.env.NEXT_PUBLIC_BASE_URL}${message.payload.avatarUrl}`
-        );
-
-        if (!result.isLoaded) {
-          console.error(result.error);
-          return;
-        }
-
-        const remoteUser = new RemoteUser(
-          gridCells(message.payload.x),
-          gridCells(message.payload.y),
-          message.payload.userId,
-          message.payload.username,
-          result
-        );
-        mainScene.addChild(remoteUser);
-        break;
-
-      case "user-left":
-        const remoteUser1 = mainScene.children.find(
-          (child) => child?.userId === message.payload.userId
-        );
-        if (remoteUser1) {
-          mainScene.removeChild(remoteUser1);
-          remoteUser1.destroy();
-        }
-        break;
-
-      case "movement":
-        const remoteUser3 = mainScene.children.find(
-          (child) => child?.userId === message.payload.userId
-        );
-        if (remoteUser3) {
-          remoteUser3.updatePosition(message.payload.x, message.payload.y);
-        }
-        break;
-
-      case "movement-rejected":
-        setMe((prev) => ({
-          ...prev,
-          x: message.payload.x,
-          y: message.payload.y,
-        }));
-        break;
-    }
-  };
 
   return (
     <div className="fixed inset-0 w-full h-full overflow-hidden bg-green-100">
@@ -599,13 +433,13 @@ export default function SpacePage() {
             <ChatPanel
               wsConnection={wsRef.current}
               userId={userId}
-              mainScene={mainSceneRef.current}
+              mainScene={gameManager.scene}
             />
           </div>
           <VideoOverlay
             wsConnection={wsRef.current}
             userId={userId}
-            mainScene={mainSceneRef.current}
+            mainScene={gameManager.scene}
           />
         </>
       )}

@@ -61,15 +61,8 @@ export class RemoteUser extends GameObject {
 
   // Update position based on server updates
   updatePosition(x, y) {
-    console.log(this.position.x, this.position.y);
-    console.log(x, y);
     this.destinationPosition.x = x;
     this.destinationPosition.y = y;
-
-    const dx = this.destinationPosition.x - this.position.x;
-    const dy = this.destinationPosition.y - this.position.y;
-
-    console.log(dx, dy);
   }
 
   // Step method to handle animations and position updates

@@ -233,7 +233,6 @@ export const VideoOverlay = ({ wsConnection, userId, mainScene }) => {
     };
 
     peerConnection.ontrack = (event) => {
-      console.log("ontrack event", event);
       setPeers((prev) => new Map(prev.set(peerId, event.streams[0])));
     };
 

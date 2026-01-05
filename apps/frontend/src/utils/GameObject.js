@@ -54,7 +54,9 @@ export class GameObject {
     this.children.forEach((child) => {
       child.destroy();
     });
-    this.parent.removeChild(this);
+    if (this.parent) {
+      this.parent.removeChild(this);
+    }
   }
 
   addChild(gameObject) {
