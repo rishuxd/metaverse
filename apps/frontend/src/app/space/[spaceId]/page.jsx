@@ -47,11 +47,33 @@ export default function SpacePage() {
     connection: { status: 'loading', label: 'Connecting to server...' },
   });
 
+  // Active users in the space
+  const [activeUsers, setActiveUsers] = useState([]);
+  const [userCount, setUserCount] = useState(0);
+
   // Check if user has avatar
   useEffect(() => {
     const avatarUrl = localStorage.getItem("avatarUrl");
     setHasAvatar(!!(avatarUrl && avatarUrl !== "null"));
   }, []);
+
+  // Fetch active users in the space once when lobby opens
+  useEffect(() => {
+    if (!showLobby || !spaceId) return;
+
+    const fetchActiveUsers = async () => {
+      try {
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL?.replace('/api/v1', '') || 'http://localhost:8080';
+        const response = await axios.get(`${baseUrl}/rooms/${spaceId}/users`);
+        setActiveUsers(response.data.users || []);
+        setUserCount(response.data.userCount || 0);
+      } catch (error) {
+        console.error("Failed to fetch active users:", error);
+      }
+    };
+
+    fetchActiveUsers();
+  }, [showLobby, spaceId]);
 
   // Set up game engine event listeners
   useEffect(() => {
@@ -211,76 +233,21 @@ export default function SpacePage() {
     };
   }, [spaceId, hasAvatar, showLobby]);
 
-  // Initialize WebSocket connection during lobby
+  // Mark connection as ready (no WebSocket needed in lobby)
   useEffect(() => {
-    const token = getAuthToken();
-    if (!token || !spaceId) {
-      return;
-    }
+    setLoadingSteps((prev) => ({
+      ...prev,
+      connection: { status: 'success', label: 'Ready to join!' },
+    }));
+  }, []);
 
-    // Prevent multiple WebSocket connections
-    if (wsRef.current && wsRef.current.readyState !== WebSocket.CLOSED) {
-      console.log("[SpacePage] WebSocket already connected, skipping");
-      return;
-    }
-
-    async function initializeWebSocket() {
-      try {
-        console.log("[SpacePage] Establishing WebSocket connection");
-        // Establish WebSocket connection
-        wsRef.current = new WebSocket("ws://localhost:5001");
-
-        wsRef.current.onopen = () => {
-          console.log("[SpacePage] WebSocket connected");
-          setIsConnected(true);
-          setLoadingSteps((prev) => ({
-            ...prev,
-            connection: { status: 'success', label: 'Ready to join!' },
-          }));
-          // Don't send join message yet - wait for user to click "Join Space"
-        };
-
-        wsRef.current.onclose = () => {
-          console.log("[SpacePage] WebSocket disconnected");
-          setIsConnected(false);
-          setLoadingSteps((prev) => ({
-            ...prev,
-            connection: { status: 'error', label: 'Connection lost' },
-          }));
-        };
-
-        wsRef.current.onmessage = (event) => {
-          const message = JSON.parse(event.data);
-          // GameManager singleton will handle the message
-          gameManager.handleWebSocketMessage(message);
-        };
-
-        // Connect GameManager to WebSocket
-        gameManager.connectWebSocket(wsRef.current);
-      } catch (error) {
-        console.error("WebSocket initialization error:", error);
-        setLoadingSteps((prev) => ({
-          ...prev,
-          connection: { status: 'error', label: 'Connection failed' },
-        }));
-      }
-    }
-
-    initializeWebSocket();
-
+  // Cleanup WebSocket and GameManager when navigating away
+  useEffect(() => {
     return () => {
+      console.log("[SpacePage] Cleaning up - closing WebSocket and resetting GameManager");
       if (wsRef.current && wsRef.current.readyState !== WebSocket.CLOSED) {
-        console.log("[SpacePage] Closing WebSocket connection");
         wsRef.current.close();
       }
-      // Don't destroy GameManager here - it's managed by separate useEffect
-    };
-  }, [spaceId]);
-
-  // Reset GameManager when navigating away, destroy on unmount
-  useEffect(() => {
-    return () => {
-      console.log("[SpacePage] Resetting GameManager for navigation");
       gameManager.reset();
     };
   }, [spaceId]);
@@ -352,25 +319,63 @@ export default function SpacePage() {
       loadingSteps.assets.status === 'success',
       loadingSteps.connection.status === 'success',
       hasAvatar,
-      gameManager.isReadyToJoin(),
+      gameManager.isReady(), // Just check if game is initialized, not WebSocket
     ];
     return requiredSteps.every(Boolean);
   };
 
-  const handleJoinSpace = () => {
+  const handleJoinSpace = async () => {
     if (!canJoinSpace()) {
       return;
     }
 
-    console.log("[SpacePage] Joining space - sending join message");
+    console.log("[SpacePage] Connecting to WebSocket and joining space");
 
-    // NOW send the join message to server
-    const token = getAuthToken();
-    gameManager.joinSpace(spaceId, token);
+    try {
+      // Establish WebSocket connection
+      const wsUrl = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:5001";
+      wsRef.current = new WebSocket(wsUrl);
 
-    // Hide lobby - character will spawn when server responds
-    setShowLobby(false);
-    setIsLoading(false);
+      await new Promise((resolve, reject) => {
+        wsRef.current.onopen = () => {
+          console.log("[SpacePage] WebSocket connected");
+          setIsConnected(true);
+          resolve();
+        };
+
+        wsRef.current.onerror = (error) => {
+          console.error("[SpacePage] WebSocket connection error:", error);
+          reject(error);
+        };
+
+        // Timeout after 5 seconds
+        setTimeout(() => reject(new Error("WebSocket connection timeout")), 5000);
+      });
+
+      wsRef.current.onclose = () => {
+        console.log("[SpacePage] WebSocket disconnected");
+        setIsConnected(false);
+      };
+
+      wsRef.current.onmessage = (event) => {
+        const message = JSON.parse(event.data);
+        gameManager.handleWebSocketMessage(message);
+      };
+
+      // Connect GameManager to WebSocket
+      gameManager.connectWebSocket(wsRef.current);
+
+      // Send join message to server
+      const token = getAuthToken();
+      gameManager.joinSpace(spaceId, token);
+
+      // Hide lobby - character will spawn when server responds
+      setShowLobby(false);
+      setIsLoading(false);
+    } catch (error) {
+      console.error("[SpacePage] Failed to connect:", error);
+      setError("Failed to connect to server. Please try again.");
+    }
   };
 
   const handleCopyLink = () => {
@@ -457,6 +462,8 @@ export default function SpacePage() {
           loadingProgress={loadingProgress}
           loadingSteps={loadingSteps}
           localVideoRef={localVideoRef}
+          activeUsers={activeUsers}
+          userCount={userCount}
           onToggleAudio={toggleAudio}
           onToggleVideo={toggleVideo}
           onSelectAvatar={setSelectedAvatar}

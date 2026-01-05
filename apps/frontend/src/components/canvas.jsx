@@ -30,7 +30,8 @@ export default function GameCanvas() {
       return;
     }
 
-    wsRef.current = new WebSocket("ws://localhost:5001");
+    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:5001";
+    wsRef.current = new WebSocket(wsUrl);
 
     wsRef.current.onopen = () => {
       setIsConnected(true);

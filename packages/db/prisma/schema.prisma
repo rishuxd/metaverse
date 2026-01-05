@@ -19,7 +19,7 @@ model User {
   password     String
   avatarId     String?
   role         Role
-  spaces       Space[]
+  spaces       Space[]     @relation("UserSpaces")
   avatar       Avatar?     @relation(fields: [avatarId], references: [id])
   joinedSpaces UserSpace[]
 }
@@ -30,7 +30,7 @@ model Space {
   createdAt   DateTime    @default(now())
   mapId       String
   creatorId   String
-  creator     User        @relation(fields: [creatorId], references: [id])
+  creator     User        @relation("UserSpaces", fields: [creatorId], references: [id])
   map         Map         @relation(fields: [mapId], references: [id])
   joinedUsers UserSpace[]
 }

@@ -37,8 +37,8 @@ function generateSpawnLocation(width: number, height: number, walls: string[]) {
 
 export class User {
   public userId?: string;
-  private username?: string;
-  private avatarUrl?: string;
+  public username?: string;
+  public avatarUrl?: string;
   private spaceId?: string;
   private x: number;
   private y: number;

@@ -46,4 +46,21 @@ export class RoomManager {
       }
     });
   }
+
+  public getActiveUsersInRoom(roomId: string) {
+    if (!this.rooms.has(roomId)) {
+      return [];
+    }
+
+    const users = this.rooms.get(roomId)!;
+    return users.map((u) => ({
+      userId: u.userId,
+      username: u.username,
+      avatarUrl: u.avatarUrl,
+    }));
+  }
+
+  public getRoomUserCount(roomId: string): number {
+    return this.rooms.get(roomId)?.length ?? 0;
+  }
 }

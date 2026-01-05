@@ -11,6 +11,12 @@ const getSpace = async (req: Request, res: Response): Promise<void> => {
       },
       include: {
         map: true,
+        creator: {
+          select: {
+            id: true,
+            username: true,
+          },
+        },
       },
     });
 
@@ -26,6 +32,7 @@ const getSpace = async (req: Request, res: Response): Promise<void> => {
     );
     return;
   } catch (error) {
+    console.error("Error fetching space:", error);
     res
       .status(500)
       .json(new ApiError(500, "Failed to fetch space, try later!"));
