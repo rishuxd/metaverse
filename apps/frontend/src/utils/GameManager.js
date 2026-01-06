@@ -108,20 +108,7 @@ export class GameManager {
       walls.set("walls", this.spaceData.map.walls);
     }
 
-    // Add map sprite if map image is available
-    const mapImage = this.assets.get('mapImage');
-    if (mapImage && this.spaceData) {
-      const mapSprite = new Sprite({
-        resource: mapImage,
-        frameSize: new Vector2(
-          gridCells(this.spaceData.map.width),
-          gridCells(this.spaceData.map.height)
-        ),
-      });
-      this.scene.addChild(mapSprite);
-    }
-
-    // Initialize camera
+    // Initialize camera first to get zoom calculation
     const viewportWidth = this.canvas.width;
     const viewportHeight = this.canvas.height;
 
@@ -132,12 +119,29 @@ export class GameManager {
       this.spaceData.map.height
     );
 
-    // Center the map initially
+    // Calculate map dimensions after scaling
     const mapWidthPixels = this.spaceData.map.width * 16;
     const mapHeightPixels = this.spaceData.map.height * 16;
+
+    // Add map sprite if map image is available
+    const mapImage = this.assets.get('mapImage');
+    if (mapImage && this.spaceData) {
+      const mapSprite = new Sprite({
+        resource: mapImage,
+        frameSize: new Vector2(
+          this.spaceData.map.width * 32,  // Actual pixel width (tiles × 32px per tile)
+          this.spaceData.map.height * 32   // Actual pixel height (tiles × 32px per tile)
+        ),
+        scale: 0.5,  // Scale down to 16px per tile for rendering
+        position: new Vector2(0, 0),
+      });
+      this.scene.addChild(mapSprite);
+    }
+
+    // Center the map: offset by half the map size (negative to center)
     this.camera.position = new Vector2(
-      (viewportWidth - mapWidthPixels) / 2,
-      (viewportHeight - mapHeightPixels) / 2
+      -mapWidthPixels / 2,
+      -mapHeightPixels / 2
     );
 
     this.scene.addChild(this.camera);
@@ -173,17 +177,13 @@ export class GameManager {
         ctx.mozImageSmoothingEnabled = false;
         ctx.msImageSmoothingEnabled = false;
 
-        // Apply zoom (from center of canvas)
-        if (this.camera.zoom !== 1.0) {
-          const centerX = this.canvas.width / 2;
-          const centerY = this.canvas.height / 2;
-          ctx.translate(centerX, centerY);
-          ctx.scale(this.camera.zoom, this.camera.zoom);
-          ctx.translate(-centerX, -centerY);
-        }
+        // Apply zoom and camera position
+        ctx.translate(this.canvas.width / 2, this.canvas.height / 2);
+        ctx.scale(this.camera.zoom, this.camera.zoom);
+        ctx.translate(this.camera.position.x, this.camera.position.y);
 
-        // Draw the scene, but use camera position as the starting offset
-        this.scene.draw(ctx, this.camera.position.x, this.camera.position.y);
+        // Draw the scene at origin
+        this.scene.draw(ctx, 0, 0);
 
         ctx.restore();
       }

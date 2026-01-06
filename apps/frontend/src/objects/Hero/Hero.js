@@ -79,8 +79,8 @@ export class Hero extends GameObject {
       return;
     }
 
-    const distance = moveTowards(this, this.destinationPosition, 1);
-    const hasArrived = distance <= 1;
+    const distance = moveTowards(this, this.destinationPosition, 2);
+    const hasArrived = distance <= 2;
     // Attempt to move again if the hero is at his position
     if (hasArrived) {
       this.tryMove(root);

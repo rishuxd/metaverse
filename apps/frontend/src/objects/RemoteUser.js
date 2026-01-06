@@ -68,10 +68,10 @@ export class RemoteUser extends GameObject {
   // Step method to handle animations and position updates
   step(delta, root) {
     // Move towards the destination position
-    const distance = moveTowards(this, this.destinationPosition, 1);
+    const distance = moveTowards(this, this.destinationPosition, 2);
 
     // Check if the user has arrived at the destination
-    if (distance <= 0) {
+    if (distance <= 2) {
       this.playIdleAnimation();
       return;
     }

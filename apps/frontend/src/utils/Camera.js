@@ -6,13 +6,21 @@ export class Camera extends GameObject {
   constructor(canvasWidth, canvasHeight, mapWidth, mapHeight) {
     super({});
 
-    this.zoom = 1.0;
-    this.minZoom = 0.5;
-    this.maxZoom = 3.0;
     this.canvasWidth = canvasWidth;
     this.canvasHeight = canvasHeight;
     this.mapWidth = mapWidth * 16; // Convert grid cells to pixels
     this.mapHeight = mapHeight * 16;
+
+    // Calculate zoom to fit entire map in viewport
+    const zoomToFitWidth = canvasWidth / this.mapWidth;
+    const zoomToFitHeight = canvasHeight / this.mapHeight;
+    const autoFitZoom = Math.min(zoomToFitWidth, zoomToFitHeight);
+
+    // Set initial zoom to auto-fit, but not less than 0.1
+    this.zoom = Math.max(0.1, autoFitZoom);
+    this.minZoom = Math.max(0.1, autoFitZoom * 0.5); // Allow zooming out to half of auto-fit
+    this.maxZoom = 5.0;
+
     this.isFollowingHero = true;
     this.manualOffset = new Vector2(0, 0);
     this.isPanning = false;
@@ -20,12 +28,10 @@ export class Camera extends GameObject {
     this.lastHeroPosition = null;
 
     events.on("HERO_POSITION", this, (heroPosition) => {
-      const personHalf = 8;
-      const halfWidth = -personHalf + this.canvasWidth / 2;
-      const halfHeight = -personHalf + this.canvasHeight / 2;
-
-      const targetX = -heroPosition.x + halfWidth;
-      const targetY = -heroPosition.y + halfHeight;
+      // Camera position is now in world space, centered
+      // To center hero, we need to move camera to -heroPosition
+      const targetX = -heroPosition.x;
+      const targetY = -heroPosition.y;
 
       // Check if hero moved (if user is controlling the character)
       if (this.lastHeroPosition &&
@@ -41,7 +47,7 @@ export class Camera extends GameObject {
         if (!this.position) {
           this.position = new Vector2(targetX, targetY);
         } else {
-          const smoothing = 0.05; // Smooth transition (0.05 = very smooth, 1 = instant)
+          const smoothing = 0.1; // Smooth transition (0.1 = smooth, 1 = instant)
           this.position.x += (targetX - this.position.x) * smoothing;
           this.position.y += (targetY - this.position.y) * smoothing;
         }
@@ -50,17 +56,19 @@ export class Camera extends GameObject {
   }
 
   adjustZoom(direction) {
-    // Snap to specific zoom levels for pixel-perfect rendering
-    const zoomLevels = [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0];
+    // Increase or decrease zoom by 10%
+    const zoomStep = 0.1;
 
-    // Find current zoom index
-    const currentIndex = zoomLevels.findIndex(level => level === this.zoom);
+    if (direction > 0) {
+      // Zoom in
+      this.zoom = Math.min(this.maxZoom, this.zoom + zoomStep);
+    } else {
+      // Zoom out
+      this.zoom = Math.max(this.minZoom, this.zoom - zoomStep);
+    }
 
-    // Move to next or previous zoom level
-    let newIndex = currentIndex + direction;
-    newIndex = Math.max(0, Math.min(zoomLevels.length - 1, newIndex));
-
-    this.zoom = zoomLevels[newIndex];
+    // Round to 2 decimal places for stability
+    this.zoom = Math.round(this.zoom * 100) / 100;
   }
 
   startPan(x, y) {
