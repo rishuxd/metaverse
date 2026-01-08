@@ -16,7 +16,7 @@ const createAvatar = async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  const imageUrl = `/uploads/${req.file.filename}`;
+  const imageUrl = `/api/v1/uploads/${req.file.filename}`;
 
   try {
     const avatar = await prisma.avatar.create({
@@ -34,7 +34,7 @@ const createAvatar = async (req: Request, res: Response): Promise<void> => {
     res.status(201).json(
       new ApiResponse(201, "Avatar created.", {
         avatarId: avatar.id,
-      })
+      }),
     );
   } catch (error) {
     res.status(500).json(new ApiError(500, "Internal Server Error!"));

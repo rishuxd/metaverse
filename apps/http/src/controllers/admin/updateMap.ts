@@ -26,7 +26,7 @@ const updateMap = async (req: Request, res: Response): Promise<void> => {
     if (parsedData.data.walls) updateData.walls = parsedData.data.walls;
 
     if (req.file) {
-      updateData.imageUrl = `/uploads/${req.file.filename}`;
+      updateData.imageUrl = `/api/v1/uploads/${req.file.filename}`;
     }
 
     // Update the map
@@ -43,7 +43,7 @@ const updateMap = async (req: Request, res: Response): Promise<void> => {
     res.status(200).json(
       new ApiResponse(200, "Map updated successfully.", {
         mapId: updatedMap.id,
-      })
+      }),
     );
   } catch (error) {
     res.status(500).json(new ApiError(500, "Could not update map, try later!"));

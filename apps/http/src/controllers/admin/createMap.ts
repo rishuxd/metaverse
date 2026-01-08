@@ -16,7 +16,7 @@ const createMap = async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  const imageUrl = `/uploads/${req.file.filename}`;
+  const imageUrl = `/api/v1/uploads/${req.file.filename}`;
 
   try {
     const map = await prisma.map.create({
@@ -38,7 +38,7 @@ const createMap = async (req: Request, res: Response): Promise<void> => {
     res.status(201).json(
       new ApiResponse(201, "Map created.", {
         mapId: map.id,
-      })
+      }),
     );
   } catch (error) {
     res.status(500).json(new ApiError(500, "Internal Server Error!"));
