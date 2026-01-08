@@ -421,7 +421,7 @@ export default function SpacePage() {
           onClick={() => router.push("/dashboard")}
         >
           <img
-            src="/rec.png"
+            src="/assets/rec.png"
             alt="logo"
             width={20}
             style={{

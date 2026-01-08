@@ -69,7 +69,7 @@ const Dashboard = () => {
       <nav className="flex items-center justify-between bg-gray-800 px-8 py-4 shadow-2xl">
         <div className="flex items-center gap-6">
           <Image
-            src="/leaf.png"
+            src="/assets/leaf.png"
             alt="Logo"
             width={36}
             height={36}

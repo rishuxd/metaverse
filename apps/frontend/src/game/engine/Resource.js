@@ -1,10 +1,9 @@
 class Resources {
   constructor() {
     this.toLoad = {
-      map1: "/maps/map1.png",
-      map2: "/maps/map2.png",
-      hero: "/sprites/hero-sheet.png",
-      shadow: "/sprites/shadow.png",
+      map1: "/assets/maps/map1.png",
+      hero: "/assets/sprites/hero-sheet.png",
+      shadow: "/assets/sprites/shadow.png",
     };
 
     this.images = {};

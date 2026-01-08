@@ -45,7 +45,10 @@ const SignupForm = () => {
   };
 
   return (
-    <AuthLayout title="Create Account" avatarImage="/avatars/avatar4.png">
+    <AuthLayout
+      title="Create Account"
+      avatarImage="/assets/avatars/avatar4.png"
+    >
       <form onSubmit={handleSignup} className="flex flex-col gap-5 w-full">
         <Input
           id="username"

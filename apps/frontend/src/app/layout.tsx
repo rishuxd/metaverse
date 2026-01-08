@@ -9,8 +9,8 @@ const montserrat = Montserrat({
 
 export const metadata: Metadata = {
   title: {
-    default: "Spaces - Virtual Metaverse Platform",
-    template: "%s | Spaces",
+    default: "Rishu's Town",
+    template: "%s | Rishu's Town",
   },
   description:
     "Create and explore interactive virtual spaces with friends. Join the metaverse, customize your avatar, and connect in real-time 2D worlds.",
@@ -30,22 +30,22 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: "https://spaces.rishuffled.in",
-    title: "Spaces - Virtual Metaverse Platform",
+    title: "Rishu's Town",
     description:
       "Create and explore interactive virtual spaces with friends. Join the metaverse, customize your avatar, and connect in real-time 2D worlds.",
-    siteName: "Spaces",
+    siteName: "Rishu's Town",
     images: [
       {
         url: "https://spaces.rishuffled.in/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Spaces - Virtual Metaverse Platform",
+        alt: "Rishu's Town",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Spaces - Virtual Metaverse Platform",
+    title: "Rishu's Town",
     description:
       "Create and explore interactive virtual spaces with friends. Join the metaverse, customize your avatar, and connect in real-time 2D worlds.",
     images: ["https://spaces.rishuffled.in/og-image.png"],
@@ -63,11 +63,17 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon-16x16.png",
-    apple: "/apple-touch-icon.png",
+    icon: [
+      { url: "/favicon-96x96.png", sizes: "96x96", type: "image/png" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: { url: "/apple-touch-icon.png", sizes: "180x180" },
   },
   manifest: "/site.webmanifest",
+  appleWebApp: {
+    title: "Rishu's Town",
+  },
 };
 
 export default function RootLayout({

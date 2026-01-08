@@ -51,7 +51,7 @@ const LoginForm = () => {
   };
 
   return (
-    <AuthLayout title="Welcome Back" avatarImage="/avatars/avatar3.png">
+    <AuthLayout title="Welcome Back" avatarImage="/assets/avatars/avatar3.png">
       <form onSubmit={handleLogin} className="flex flex-col gap-5 w-full">
         <Input
           id="username"

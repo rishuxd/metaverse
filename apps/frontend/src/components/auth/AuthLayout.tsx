@@ -6,12 +6,16 @@ interface AuthLayoutProps {
   children: React.ReactNode;
 }
 
-export const AuthLayout: React.FC<AuthLayoutProps> = ({ title, avatarImage, children }) => {
+export const AuthLayout: React.FC<AuthLayoutProps> = ({
+  title,
+  avatarImage,
+  children,
+}) => {
   return (
     <div
       className="flex items-center justify-center h-screen bg-cover bg-center"
       style={{
-        backgroundImage: 'url("/sprites/sky.png")',
+        backgroundImage: 'url("/assets/sprites/sky.png")',
       }}
     >
       <div className="flex flex-col items-center justify-between h-auto w-full max-w-md py-8 px-12 rounded-3xl bg-white shadow-2xl">
