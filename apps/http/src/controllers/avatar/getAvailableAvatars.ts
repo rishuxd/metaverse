@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import ApiError from "../../utils/apiError";
-import client from "@repo/db/client";
+import client from "@prisma/client";
 import ApiResponse from "../../utils/apiResponse";
 
 const getAvailableAvatars = async (

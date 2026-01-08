@@ -3,7 +3,7 @@ import { WebSocket } from "ws";
 import { RoomManager } from "./roomManager";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { JWT_SECRET } from "./utils/config";
-import client from "@repo/db/client";
+import client from "@prisma/client";
 
 interface WebRTCMessage {
   type: "webrtc-offer" | "webrtc-answer" | "webrtc-ice-candidate";

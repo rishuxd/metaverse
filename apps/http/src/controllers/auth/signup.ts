@@ -1,5 +1,5 @@
 import e, { Request, Response } from "express";
-import client from "@repo/db/client";
+import client from "@prisma/client";
 import { SignupSchema } from "../../types";
 import ApiError from "../../utils/apiError";
 import ApiResponse from "../../utils/apiResponse";

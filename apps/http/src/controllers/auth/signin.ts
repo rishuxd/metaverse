@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { SigninSchema } from "../../types";
-import client from "@repo/db/client";
+import client from "@prisma/client";
 import ApiError from "../../utils/apiError";
 import { compare } from "../../utils/scrypt";
 import ApiResponse from "../../utils/apiResponse";

@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { updateUserMetadataSchema } from "../../types";
 import ApiError from "../../utils/apiError";
-import client from "@repo/db/client";
+import client from "@prisma/client";
 import ApiResponse from "../../utils/apiResponse";
 
 const updateUserMetadata = async (

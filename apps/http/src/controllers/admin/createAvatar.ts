@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { createAvatarSchema } from "../../types";
 import ApiError from "../../utils/apiError";
-import client from "@repo/db/client";
+import client from "@prisma/client";
 import ApiResponse from "../../utils/apiResponse";
 
 const createAvatar = async (req: Request, res: Response): Promise<void> => {
