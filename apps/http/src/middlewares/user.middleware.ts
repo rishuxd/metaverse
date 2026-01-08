@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { JWT_SECRET } from "../utils/config";
+import { config } from "../config/constants";
 import { NextFunction, Request, Response } from "express";
 
 declare global {
@@ -27,7 +27,7 @@ export const userMiddleware = (
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as {
+    const decoded = jwt.verify(token, config.jwtSecret) as {
       id: string;
       role: string;
     };

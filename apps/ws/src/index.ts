@@ -1,41 +1,95 @@
 import { WebSocketServer } from "ws";
-import { User } from "./user";
 import express from "express";
 import cors from "cors";
-import { RoomManager } from "./roomManager";
+import { User } from "./user";
+import { RoomManager } from "./services/roomManager";
+import { config } from "./config/constants";
 
-const WS_PORT = Number(process.env.WS_PORT) || 7003;
-const HTTP_PORT = Number(process.env.HTTP_PORT) || 7004;
+// WebSocket Server
+const wss = new WebSocketServer({ port: config.wsPort });
 
-console.log(`Starting WebSocket server on port ${WS_PORT}`);
-const wss = new WebSocketServer({ port: WS_PORT });
+wss.on("connection", (ws) => {
+  const user = new User(ws);
 
-wss.on("connection", function connection(ws) {
-  let user = new User(ws);
-  ws.on("error", console.error);
+  ws.on("error", (error) => {
+    console.error("WebSocket error:", error);
+  });
 
   ws.on("close", () => {
-    user?.destroy();
+    user.destroy();
   });
 });
 
-// HTTP server to expose room data
-const app = express();
-app.use(cors());
+console.log(`✅ WebSocket Server running on port ${config.wsPort}`);
 
+// HTTP Server for room info
+const app = express();
+
+app.use(cors({
+  origin: config.corsOrigins,
+  credentials: true,
+}));
+
+app.use(express.json());
+
+// Health check
+app.get("/health", (req, res) => {
+  res.json({
+    status: "ok",
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+  });
+});
+
+// Room info endpoint
 app.get("/rooms/:spaceId/users", (req, res) => {
   const { spaceId } = req.params;
   const roomManager = RoomManager.getInstance();
-  const users = roomManager.getActiveUsersInRoom(spaceId);
-  const userCount = roomManager.getRoomUserCount(spaceId);
 
   res.json({
-    spaceId,
-    userCount,
-    users,
+    success: true,
+    data: {
+      spaceId,
+      userCount: roomManager.getRoomUserCount(spaceId),
+      users: roomManager.getActiveUsersInRoom(spaceId),
+    },
   });
 });
 
-app.listen(HTTP_PORT, () => {
-  console.log(`Room info HTTP server running on port ${HTTP_PORT}`);
+const httpServer = app.listen(config.httpPort, () => {
+  console.log(`✅ Room Info Server running on port ${config.httpPort}`);
+});
+
+// Graceful shutdown
+function shutdown(signal: string): void {
+  console.log(`\n🛑 ${signal} received. Shutting down...`);
+
+  wss.close(() => {
+    console.log("✅ WebSocket server closed");
+  });
+
+  httpServer.close(() => {
+    console.log("✅ HTTP server closed");
+    process.exit(0);
+  });
+
+  // Force shutdown after 10s
+  setTimeout(() => {
+    console.error("⚠️  Forced shutdown after timeout");
+    process.exit(1);
+  }, 10000);
+}
+
+process.on("SIGINT", () => shutdown("SIGINT"));
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+
+// Handle uncaught errors
+process.on("uncaughtException", (error) => {
+  console.error("❌ Uncaught Exception:", error);
+  process.exit(1);
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("❌ Unhandled Rejection at:", promise, "reason:", reason);
+  process.exit(1);
 });

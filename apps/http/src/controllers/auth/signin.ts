@@ -5,7 +5,7 @@ import ApiError from "../../utils/apiError";
 import { compare } from "../../utils/scrypt";
 import ApiResponse from "../../utils/apiResponse";
 import jwt from "jsonwebtoken";
-import { JWT_SECRET } from "../../utils/config";
+import { config } from "../../config/constants";
 
 const signin = async (req: Request, res: Response): Promise<void> => {
   const parsedDate = SigninSchema.safeParse(req.body);
@@ -35,7 +35,7 @@ const signin = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET);
+    const token = jwt.sign({ id: user.id, role: user.role }, config.jwtSecret);
 
     res.status(200).json(
       new ApiResponse(200, "User signed in", {

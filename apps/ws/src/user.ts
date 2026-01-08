@@ -1,9 +1,9 @@
 // user.ts
 import { WebSocket } from "ws";
-import { RoomManager } from "./roomManager";
 import jwt, { JwtPayload } from "jsonwebtoken";
-import { JWT_SECRET } from "./utils/config";
 import client from "@prisma/client";
+import { RoomManager } from "./services/roomManager";
+import { config } from "./config/constants";
 
 interface WebRTCMessage {
   type: "webrtc-offer" | "webrtc-answer" | "webrtc-ice-candidate";
@@ -150,7 +150,7 @@ export class User {
       return;
     }
 
-    const userId = (jwt.verify(payload.token, JWT_SECRET) as JwtPayload).id;
+    const userId = (jwt.verify(payload.token, config.jwtSecret) as JwtPayload).id;
     if (!userId) {
       this.ws.close();
       return;
