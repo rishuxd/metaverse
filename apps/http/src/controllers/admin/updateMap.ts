@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { updateMapSchema } from "../../types";
 import ApiError from "../../utils/apiError";
-import client from "@prisma/client";
+import prisma from "../../config/prisma";
 import ApiResponse from "../../utils/apiResponse";
 
 const updateMap = async (req: Request, res: Response): Promise<void> => {
@@ -30,7 +30,7 @@ const updateMap = async (req: Request, res: Response): Promise<void> => {
     }
 
     // Update the map
-    const updatedMap = await client.map.update({
+    const updatedMap = await prisma.map.update({
       where: { id },
       data: updateData,
     });

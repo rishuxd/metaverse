@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { SigninSchema } from "../../types";
-import client from "@prisma/client";
+import prisma from "../../config/prisma";
 import ApiError from "../../utils/apiError";
 import { compare } from "../../utils/scrypt";
 import ApiResponse from "../../utils/apiResponse";
@@ -15,7 +15,7 @@ const signin = async (req: Request, res: Response): Promise<void> => {
   }
 
   try {
-    const user = await client.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: {
         username: parsedDate.data.username,
       },
@@ -42,7 +42,7 @@ const signin = async (req: Request, res: Response): Promise<void> => {
         token,
         username: user.username,
         avatarUrl: user.avatar?.imageUrl || null,
-      })
+      }),
     );
   } catch (error) {
     res.status(500).json({ error: "Internal Server Error" });

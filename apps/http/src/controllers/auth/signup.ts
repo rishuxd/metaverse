@@ -1,5 +1,5 @@
 import e, { Request, Response } from "express";
-import client from "@prisma/client";
+import prisma from "../../config/prisma";
 import { SignupSchema } from "../../types";
 import ApiError from "../../utils/apiError";
 import ApiResponse from "../../utils/apiResponse";
@@ -15,7 +15,7 @@ const signup = async (req: Request, res: Response): Promise<void> => {
   const hashedPassword = await hash(parsedDate.data.password);
 
   try {
-    const user = await client.user.create({
+    const user = await prisma.user.create({
       data: {
         username: parsedDate.data.username,
         password: hashedPassword,

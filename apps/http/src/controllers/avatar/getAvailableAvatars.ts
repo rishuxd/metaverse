@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import ApiError from "../../utils/apiError";
-import client from "@prisma/client";
+import prisma from "../../config/prisma";
 import ApiResponse from "../../utils/apiResponse";
 
 const getAvailableAvatars = async (
@@ -8,7 +8,7 @@ const getAvailableAvatars = async (
   res: Response
 ): Promise<void> => {
   try {
-    const avatars = await client.avatar.findMany();
+    const avatars = await prisma.avatar.findMany();
 
     res.status(201).json(
       new ApiResponse(201, "Avatars fetched.", {

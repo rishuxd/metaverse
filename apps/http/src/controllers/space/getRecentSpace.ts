@@ -1,11 +1,11 @@
 import { Request, Response } from "express";
-import client from "@prisma/client";
+import prisma from "../../config/prisma";
 import ApiResponse from "../../utils/apiResponse";
 import ApiError from "../../utils/apiError";
 
 const getRecentSpaces = async (req: Request, res: Response): Promise<void> => {
   try {
-    const recentSpaces = await client.userSpace.findMany({
+    const recentSpaces = await prisma.userSpace.findMany({
       where: {
         userId: req.user!.id,
         space: {

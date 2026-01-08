@@ -1,11 +1,11 @@
 import { Request, Response } from "express";
 import ApiError from "../../utils/apiError";
-import client from "@prisma/client";
+import prisma from "../../config/prisma";
 import ApiResponse from "../../utils/apiResponse";
 
 const getAvailableMaps = async (req: Request, res: Response): Promise<void> => {
   try {
-    const maps = await client.map.findMany();
+    const maps = await prisma.map.findMany();
 
     res.status(200).json(new ApiResponse(201, "Maps fetched.", maps));
   } catch (error) {

@@ -5,13 +5,13 @@ import { VideoOverlay } from "@/components/video";
 import axios from "axios";
 import { useRouter, useParams } from "next/navigation";
 import ChatPanel from "@/components/chat";
-import { loadImage } from "@/helpers/loadImage";
+import { loadImage } from "@/game/helpers/loadImage";
 import { walls } from "@/levels/level1";
 import { getAuthToken } from "@/utils/auth";
 import { Share2, Check } from "lucide-react";
 import SpaceLobbyOverlay from "@/components/lobby/SpaceLobbyOverlay";
-import { GameManager } from "@/utils/GameManager";
-import { events } from "@/utils/Events";
+import { GameManager } from "@/game/engine/GameManager";
+import { events } from "@/game/engine/Events";
 
 export default function SpacePage() {
   const router = useRouter();
@@ -40,11 +40,11 @@ export default function SpacePage() {
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [cachedMapImage, setCachedMapImage] = useState(null);
   const [loadingSteps, setLoadingSteps] = useState({
-    spaceData: { status: 'loading', label: 'Fetching space...' },
-    assets: { status: 'loading', label: 'Loading assets...' },
-    media: { status: 'loading', label: 'Setting up media...' },
-    avatars: { status: 'loading', label: 'Loading avatars...' },
-    connection: { status: 'loading', label: 'Connecting to server...' },
+    spaceData: { status: "loading", label: "Fetching space..." },
+    assets: { status: "loading", label: "Loading assets..." },
+    media: { status: "loading", label: "Setting up media..." },
+    avatars: { status: "loading", label: "Loading avatars..." },
+    connection: { status: "loading", label: "Connecting to server..." },
   });
 
   // Active users in the space
@@ -63,8 +63,9 @@ export default function SpacePage() {
 
     const fetchActiveUsers = async () => {
       try {
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL?.replace('/api/v1', '') || 'http://localhost:8080';
-        const response = await axios.get(`${baseUrl}/rooms/${spaceId}/users`);
+        const wsHttpUrl =
+          process.env.NEXT_PUBLIC_WS_HTTP_URL || "http://localhost:7004";
+        const response = await axios.get(`${wsHttpUrl}/rooms/${spaceId}/users`);
         setActiveUsers(response.data.users || []);
         setUserCount(response.data.userCount || 0);
       } catch (error) {
@@ -85,7 +86,7 @@ export default function SpacePage() {
       console.log("[GameManager] Game is ready");
       setLoadingSteps((prev) => ({
         ...prev,
-        connection: { status: 'success', label: 'Game ready!' },
+        connection: { status: "success", label: "Game ready!" },
       }));
     };
 
@@ -112,27 +113,29 @@ export default function SpacePage() {
     let progress = 0;
 
     // Task 1: Fetch space data
-    axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/space/${spaceId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-    .then((response) => {
-      const spaceData = response.data.data.space;
-      setSpace(spaceData);
+    axios
+      .get(`${process.env.NEXT_PUBLIC_BASE_URL}/space/${spaceId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((response) => {
+        const spaceData = response.data.data.space;
+        setSpace(spaceData);
 
-      setLoadingSteps((prev) => ({
-        ...prev,
-        spaceData: { status: 'success', label: 'Space loaded!' },
-      }));
-      progress += 25;
-      setLoadingProgress(progress);
+        setLoadingSteps((prev) => ({
+          ...prev,
+          spaceData: { status: "success", label: "Space loaded!" },
+        }));
+        progress += 25;
+        setLoadingProgress(progress);
 
-      // Task 2: Preload map image
-      loadImage(`${process.env.NEXT_PUBLIC_BASE_URL}${spaceData.map.imageUrl}`)
-        .then(async (mapImage) => {
+        // Task 2: Preload map image
+        loadImage(
+          `${process.env.NEXT_PUBLIC_BASE_URL}${spaceData.map.imageUrl}`,
+        ).then(async (mapImage) => {
           setCachedMapImage(mapImage);
           setLoadingSteps((prev) => ({
             ...prev,
-            assets: { status: 'success', label: 'Assets loaded!' },
+            assets: { status: "success", label: "Assets loaded!" },
           }));
           progress += 25;
           setLoadingProgress(progress);
@@ -149,7 +152,7 @@ export default function SpacePage() {
 
               // Initialize game with preloaded assets
               await gameManager.initialize(canvas, spaceData, {
-                mapImage: mapImage
+                mapImage: mapImage,
               });
 
               // Connect WebSocket to GameManager if available
@@ -159,50 +162,57 @@ export default function SpacePage() {
 
               console.log("[SpacePage] GameManager initialized with assets");
             } catch (error) {
-              console.error("[SpacePage] GameManager initialization failed:", error);
+              console.error(
+                "[SpacePage] GameManager initialization failed:",
+                error,
+              );
             }
           } else if (gameManager.isInitialized) {
-            console.log("[SpacePage] GameManager already initialized, skipping");
+            console.log(
+              "[SpacePage] GameManager already initialized, skipping",
+            );
           }
         });
-    })
-    .catch((err) => {
-      console.error("Failed to fetch space:", err);
-      setError("Failed to load space. Please try again.");
-      setLoadingSteps((prev) => ({
-        ...prev,
-        spaceData: { status: 'error', label: 'Failed to load space' },
-      }));
-    });
+      })
+      .catch((err) => {
+        console.error("Failed to fetch space:", err);
+        setError("Failed to load space. Please try again.");
+        setLoadingSteps((prev) => ({
+          ...prev,
+          spaceData: { status: "error", label: "Failed to load space" },
+        }));
+      });
 
     // Task 3: Fetch avatars (if needed)
     if (!hasAvatar) {
-      axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/avatars`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((response) => {
-        if (response.status === 201) {
-          setAvatars(response.data.data.avatars);
-          setLoadingSteps((prev) => ({
-            ...prev,
-            avatars: { status: 'success', label: 'Avatars loaded!' },
-          }));
-          progress += 25;
-          setLoadingProgress(progress);
-        }
-      })
-      .catch((err) => console.error("Failed to fetch avatars:", err));
+      axios
+        .get(`${process.env.NEXT_PUBLIC_BASE_URL}/avatars`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((response) => {
+          if (response.status === 201) {
+            setAvatars(response.data.data.avatars);
+            setLoadingSteps((prev) => ({
+              ...prev,
+              avatars: { status: "success", label: "Avatars loaded!" },
+            }));
+            progress += 25;
+            setLoadingProgress(progress);
+          }
+        })
+        .catch((err) => console.error("Failed to fetch avatars:", err));
     } else {
       setLoadingSteps((prev) => ({
         ...prev,
-        avatars: { status: 'success', label: 'Avatar ready!' },
+        avatars: { status: "success", label: "Avatar ready!" },
       }));
       progress += 25;
       setLoadingProgress(progress);
     }
 
     // Task 4: Get user media
-    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+    navigator.mediaDevices
+      .getUserMedia({ video: true, audio: true })
       .then((stream) => {
         mediaStreamRef.current = stream;
         if (localVideoRef.current) {
@@ -210,7 +220,7 @@ export default function SpacePage() {
         }
         setLoadingSteps((prev) => ({
           ...prev,
-          media: { status: 'success', label: 'Media ready!' },
+          media: { status: "success", label: "Media ready!" },
         }));
         progress += 25;
         setLoadingProgress(progress);
@@ -219,7 +229,7 @@ export default function SpacePage() {
         console.warn("Media not available:", err);
         setLoadingSteps((prev) => ({
           ...prev,
-          media: { status: 'error', label: 'Media unavailable (optional)' },
+          media: { status: "error", label: "Media unavailable (optional)" },
         }));
         progress += 25;
         setLoadingProgress(progress);
@@ -237,14 +247,16 @@ export default function SpacePage() {
   useEffect(() => {
     setLoadingSteps((prev) => ({
       ...prev,
-      connection: { status: 'success', label: 'Ready to join!' },
+      connection: { status: "success", label: "Ready to join!" },
     }));
   }, []);
 
   // Cleanup WebSocket and GameManager when navigating away
   useEffect(() => {
     return () => {
-      console.log("[SpacePage] Cleaning up - closing WebSocket and resetting GameManager");
+      console.log(
+        "[SpacePage] Cleaning up - closing WebSocket and resetting GameManager",
+      );
       if (wsRef.current && wsRef.current.readyState !== WebSocket.CLOSED) {
         wsRef.current.close();
       }
@@ -266,8 +278,8 @@ export default function SpacePage() {
       gameManager.resize(window.innerWidth, window.innerHeight);
     };
 
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   // Lobby handlers
@@ -299,7 +311,7 @@ export default function SpacePage() {
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_BASE_URL}/user/metadata`,
         { avatarId: selectedAvatar },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
 
       if (response.status === 201) {
@@ -315,9 +327,9 @@ export default function SpacePage() {
 
   const canJoinSpace = () => {
     const requiredSteps = [
-      loadingSteps.spaceData.status === 'success',
-      loadingSteps.assets.status === 'success',
-      loadingSteps.connection.status === 'success',
+      loadingSteps.spaceData.status === "success",
+      loadingSteps.assets.status === "success",
+      loadingSteps.connection.status === "success",
       hasAvatar,
       gameManager.isReady(), // Just check if game is initialized, not WebSocket
     ];
@@ -349,7 +361,10 @@ export default function SpacePage() {
         };
 
         // Timeout after 5 seconds
-        setTimeout(() => reject(new Error("WebSocket connection timeout")), 5000);
+        setTimeout(
+          () => reject(new Error("WebSocket connection timeout")),
+          5000,
+        );
       });
 
       wsRef.current.onclose = () => {
@@ -386,19 +401,17 @@ export default function SpacePage() {
     });
   };
 
-
-
   return (
     <div className="fixed inset-0 w-full h-full overflow-hidden bg-green-100">
       <canvas
         ref={canvasRef}
         id="game-canvas"
         style={{
-          display: 'block',
-          backgroundColor: '#d1fae5',
-          imageRendering: 'pixelated',
-          imageRendering: '-moz-crisp-edges',
-          imageRendering: 'crisp-edges',
+          display: "block",
+          backgroundColor: "#d1fae5",
+          imageRendering: "pixelated",
+          imageRendering: "-moz-crisp-edges",
+          imageRendering: "crisp-edges",
         }}
       />
 

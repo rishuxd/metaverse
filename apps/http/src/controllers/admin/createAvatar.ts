@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { createAvatarSchema } from "../../types";
 import ApiError from "../../utils/apiError";
-import client from "@prisma/client";
+import prisma from "../../config/prisma";
 import ApiResponse from "../../utils/apiResponse";
 
 const createAvatar = async (req: Request, res: Response): Promise<void> => {
@@ -19,7 +19,7 @@ const createAvatar = async (req: Request, res: Response): Promise<void> => {
   const imageUrl = `/uploads/${req.file.filename}`;
 
   try {
-    const avatar = await client.avatar.create({
+    const avatar = await prisma.avatar.create({
       data: {
         name: parsedData.data.name,
         imageUrl,

@@ -40,3 +40,7 @@ yarn-error.log*
 # Build cache
 tsconfig.tsbuildinfo
 .turbo
+.DS_Store
+*.log
+.next/
+dist/

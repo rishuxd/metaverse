@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { createMapSchema } from "../../types";
 import ApiError from "../../utils/apiError";
-import client from "@prisma/client";
+import prisma from "../../config/prisma";
 import ApiResponse from "../../utils/apiResponse";
 
 const createMap = async (req: Request, res: Response): Promise<void> => {
@@ -19,7 +19,7 @@ const createMap = async (req: Request, res: Response): Promise<void> => {
   const imageUrl = `/uploads/${req.file.filename}`;
 
   try {
-    const map = await client.map.create({
+    const map = await prisma.map.create({
       data: {
         name: parsedData.data.name,
         width: parseInt(parsedData.data.width),

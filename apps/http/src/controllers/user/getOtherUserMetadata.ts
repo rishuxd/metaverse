@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import ApiError from "../../utils/apiError";
-import client from "@prisma/client";
+import prisma from "../../config/prisma";
 import ApiResponse from "../../utils/apiResponse";
 
 const getOtherUserMetadata = async (
@@ -10,7 +10,7 @@ const getOtherUserMetadata = async (
   const userIdString = (req.query.ids ?? "[]") as string;
   const userIds = userIdString.slice(1, userIdString.length - 1).split(",");
   try {
-    const users = await client.user.findMany({
+    const users = await prisma.user.findMany({
       where: {
         id: {
           in: userIds,

@@ -1,11 +1,11 @@
 import { Request, Response } from "express";
 import ApiError from "../../utils/apiError";
-import client from "@prisma/client";
+import prisma from "../../config/prisma";
 import ApiResponse from "../../utils/apiResponse";
 
 const getSpace = async (req: Request, res: Response): Promise<void> => {
   try {
-    const space = await client.space.findUnique({
+    const space = await prisma.space.findUnique({
       where: {
         id: req.params.spaceId,
       },

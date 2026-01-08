@@ -1,11 +1,11 @@
 import { Request, Response } from "express";
 import ApiError from "../../utils/apiError";
-import client from "@prisma/client";
+import prisma from "../../config/prisma";
 import ApiResponse from "../../utils/apiResponse";
 
 const deleteSpace = async (req: Request, res: Response): Promise<void> => {
   try {
-    const space = await client.space.findUnique({
+    const space = await prisma.space.findUnique({
       where: {
         id: req.params.spaceId,
       },
@@ -28,7 +28,7 @@ const deleteSpace = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    await client.space.delete({
+    await prisma.space.delete({
       where: {
         id: req.params.spaceId,
       },

@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { updateUserMetadataSchema } from "../../types";
 import ApiError from "../../utils/apiError";
-import client from "@prisma/client";
+import prisma from "../../config/prisma";
 import ApiResponse from "../../utils/apiResponse";
 
 const updateUserMetadata = async (
@@ -15,7 +15,7 @@ const updateUserMetadata = async (
   }
 
   try {
-    const user = await client.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: {
         id: req.user?.id,
       },
@@ -26,7 +26,7 @@ const updateUserMetadata = async (
       return;
     }
 
-    await client.user.update({
+    await prisma.user.update({
       where: {
         id: req.user?.id,
       },
@@ -35,7 +35,7 @@ const updateUserMetadata = async (
       },
     });
 
-    const avatar = await client.avatar.findUnique({
+    const avatar = await prisma.avatar.findUnique({
       where: {
         id: parsedData.data.avatarId,
       },

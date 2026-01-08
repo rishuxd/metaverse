@@ -1,7 +1,7 @@
 // user.ts
 import { WebSocket } from "ws";
 import jwt, { JwtPayload } from "jsonwebtoken";
-import client from "@prisma/client";
+import prisma from "./config/prisma";
 import { RoomManager } from "./services/roomManager";
 import { config } from "./config/constants";
 
@@ -117,7 +117,7 @@ export class User {
       RoomManager.getInstance().broadcastToRoom(
         this.spaceId!,
         this,
-        chatMessage
+        chatMessage,
       );
     }
 
@@ -136,7 +136,7 @@ export class User {
   }
 
   private async handleJoin(payload: { spaceId: string; token: string }) {
-    const space = await client.space.findUnique({
+    const space = await prisma.space.findUnique({
       where: {
         id: payload.spaceId,
       },
@@ -150,7 +150,8 @@ export class User {
       return;
     }
 
-    const userId = (jwt.verify(payload.token, config.jwtSecret) as JwtPayload).id;
+    const userId = (jwt.verify(payload.token, config.jwtSecret) as JwtPayload)
+      .id;
     if (!userId) {
       this.ws.close();
       return;
@@ -158,7 +159,7 @@ export class User {
 
     this.userId = userId;
 
-    const user = await client.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: {
         id: userId,
       },
@@ -173,7 +174,7 @@ export class User {
 
     this.spaceId = payload.spaceId;
 
-    const existingRecord = await client.userSpace.findFirst({
+    const existingRecord = await prisma.userSpace.findFirst({
       where: {
         userId: this.userId,
         spaceId: this.spaceId,
@@ -181,7 +182,7 @@ export class User {
     });
 
     if (existingRecord) {
-      await client.userSpace.update({
+      await prisma.userSpace.update({
         where: { id: existingRecord.id },
         data: {
           joinedAt: new Date(),
@@ -189,7 +190,7 @@ export class User {
         },
       });
     } else {
-      await client.userSpace.create({
+      await prisma.userSpace.create({
         data: {
           userId: this.userId!,
           spaceId: this.spaceId,
@@ -203,7 +204,7 @@ export class User {
     const { x, y } = generateSpawnLocation(
       space.map.width,
       space.map.height,
-      space.map.walls
+      space.map.walls,
     );
     this.x = x;
     this.y = y;
@@ -320,7 +321,7 @@ export class User {
 
   async destroy() {
     try {
-      await client.userSpace.update({
+      await prisma.userSpace.update({
         where: {
           userId_spaceId: {
             userId: this.userId!,

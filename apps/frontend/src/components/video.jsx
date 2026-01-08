@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Mic, MicOff, Video, VideoOff } from "lucide-react";
-import { gridCells } from "@/helpers/grid";
+import { gridCells } from "@/game/helpers/grid";
 
 export const VideoOverlay = ({ wsConnection, userId, mainScene }) => {
   const [peers, setPeers] = useState(new Map());
@@ -26,13 +26,13 @@ export const VideoOverlay = ({ wsConnection, userId, mainScene }) => {
     if (!mainScene) return;
 
     const localPlayer = mainScene.children.find(
-      (child) => child?.userId === userId
+      (child) => child?.userId === userId,
     );
     if (!localPlayer) return;
 
     videoElements.current.forEach((element, peerId) => {
       const remotePeer = mainScene.children.find(
-        (child) => child?.userId === peerId
+        (child) => child?.userId === peerId,
       );
       if (!remotePeer) return;
 
@@ -153,7 +153,7 @@ export const VideoOverlay = ({ wsConnection, userId, mainScene }) => {
   const handleMediaStateUpdate = (payload) => {
     const { userId: peerId, isAudioMuted, isVideoOff } = payload;
     setPeerMediaStates(
-      (prev) => new Map(prev.set(peerId, { isAudioMuted, isVideoOff }))
+      (prev) => new Map(prev.set(peerId, { isAudioMuted, isVideoOff })),
     );
   };
 
@@ -166,7 +166,7 @@ export const VideoOverlay = ({ wsConnection, userId, mainScene }) => {
           isVideoOff,
           userId,
         },
-      })
+      }),
     );
   };
 
@@ -205,7 +205,7 @@ export const VideoOverlay = ({ wsConnection, userId, mainScene }) => {
     peerConnection.onconnectionstatechange = () => {
       console.log(
         `Connection state with ${peerId}:`,
-        peerConnection.connectionState
+        peerConnection.connectionState,
       );
       if (peerConnection.connectionState === "failed") {
         console.warn(`Connection with ${peerId} failed. Reinitiating...`);
@@ -227,7 +227,7 @@ export const VideoOverlay = ({ wsConnection, userId, mainScene }) => {
               candidate: event.candidate,
               targetUserId: peerId,
             },
-          })
+          }),
         );
       }
     };
@@ -246,7 +246,7 @@ export const VideoOverlay = ({ wsConnection, userId, mainScene }) => {
             offer,
             targetUserId: peerId,
           },
-        })
+        }),
       );
     } catch (err) {
       console.error("Error creating offer:", err);
@@ -271,7 +271,7 @@ export const VideoOverlay = ({ wsConnection, userId, mainScene }) => {
       peerConnection.onconnectionstatechange = () => {
         console.log(
           `Connection state with ${from}:`,
-          peerConnection.connectionState
+          peerConnection.connectionState,
         );
         if (peerConnection.connectionState === "failed") {
           console.warn(`Connection with ${from} failed. Reinitiating...`);
@@ -293,7 +293,7 @@ export const VideoOverlay = ({ wsConnection, userId, mainScene }) => {
                 candidate: event.candidate,
                 targetUserId: from,
               },
-            })
+            }),
           );
         }
       };
@@ -303,7 +303,7 @@ export const VideoOverlay = ({ wsConnection, userId, mainScene }) => {
       };
 
       await peerConnection.setRemoteDescription(
-        new RTCSessionDescription(offer)
+        new RTCSessionDescription(offer),
       );
 
       if (candidateBuffer.current.has(from)) {
@@ -323,7 +323,7 @@ export const VideoOverlay = ({ wsConnection, userId, mainScene }) => {
             answer,
             targetUserId: from,
           },
-        })
+        }),
       );
     } catch (err) {
       console.error("Error handling offer:", err);
@@ -337,7 +337,7 @@ export const VideoOverlay = ({ wsConnection, userId, mainScene }) => {
     if (peerConnection) {
       try {
         await peerConnection.setRemoteDescription(
-          new RTCSessionDescription(answer)
+          new RTCSessionDescription(answer),
         );
       } catch (err) {
         console.error("Error setting remote description:", err);

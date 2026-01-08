@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { createSpaceSchema } from "../../types";
 import ApiError from "../../utils/apiError";
-import client from "@prisma/client";
+import prisma from "../../config/prisma";
 import ApiResponse from "../../utils/apiResponse";
 
 const createSpace = async (req: Request, res: Response): Promise<void> => {
@@ -12,7 +12,7 @@ const createSpace = async (req: Request, res: Response): Promise<void> => {
   }
 
   try {
-    const space = await client.space.create({
+    const space = await prisma.space.create({
       data: {
         name: parsedData.data.name,
         mapId: parsedData.data.mapId,

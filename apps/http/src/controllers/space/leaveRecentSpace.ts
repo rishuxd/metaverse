@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import client from "@prisma/client";
+import prisma from "../../config/prisma";
 import ApiResponse from "../../utils/apiResponse";
 import ApiError from "../../utils/apiError";
 
@@ -9,7 +9,7 @@ const leaveRecentSpace = async (req: Request, res: Response): Promise<void> => {
     const userId = req.user!.id;
 
     // Check if user has joined this space
-    const userSpace = await client.userSpace.findUnique({
+    const userSpace = await prisma.userSpace.findUnique({
       where: {
         userId_spaceId: {
           userId,
@@ -24,7 +24,7 @@ const leaveRecentSpace = async (req: Request, res: Response): Promise<void> => {
     }
 
     // Delete the UserSpace record (leave the space)
-    await client.userSpace.delete({
+    await prisma.userSpace.delete({
       where: {
         userId_spaceId: {
           userId,
