@@ -1,0 +1,10 @@
+# Allow all crawlers
+User-agent: *
+Allow: /
+
+# Disallow private routes
+Disallow: /api/
+Disallow: /space/
+
+# Sitemap location
+Sitemap: https://spaces.rishuffled.in/sitemap.xml
