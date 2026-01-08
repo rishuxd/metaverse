@@ -7,10 +7,16 @@ const app = express();
 
 app.use(
   cors({
-    origin: "*",
+    origin: [
+      "https://spaces.rishuffled.in",
+      "https://www.spaces.rishuffled.in",
+      "http://localhost:3000",
+      "http://localhost:7001",
+    ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
-  })
+    credentials: true,
+  }),
 );
 
 app.use(express.json());
@@ -23,6 +29,8 @@ app.get("/", (req: Request, res: Response) => {
 
 app.use("/api/v1", v1Routes);
 
-app.listen(5000, () => {
-  console.log("Server is running on port 5000 :)");
+const PORT = process.env.PORT || 7002;
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT} :)`);
 });

@@ -4,8 +4,11 @@ import express from "express";
 import cors from "cors";
 import { RoomManager } from "./roomManager";
 
-console.log("Starting WebSocket server on port 5001");
-const wss = new WebSocketServer({ port: 5001 });
+const WS_PORT = Number(process.env.WS_PORT) || 7003;
+const HTTP_PORT = Number(process.env.HTTP_PORT) || 7004;
+
+console.log(`Starting WebSocket server on port ${WS_PORT}`);
+const wss = new WebSocketServer({ port: WS_PORT });
 
 wss.on("connection", function connection(ws) {
   let user = new User(ws);
@@ -33,6 +36,6 @@ app.get("/rooms/:spaceId/users", (req, res) => {
   });
 });
 
-app.listen(5002, () => {
-  console.log("Room info HTTP server running on port 5002");
+app.listen(HTTP_PORT, () => {
+  console.log(`Room info HTTP server running on port ${HTTP_PORT}`);
 });
