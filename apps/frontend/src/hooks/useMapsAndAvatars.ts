@@ -13,10 +13,10 @@ export const useMapsAndAvatars = (token: string | null) => {
     const fetchMaps = async () => {
       try {
         const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/maps`,
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/maps`,
           {
             headers: { Authorization: `Bearer ${token}` },
-          }
+          },
         );
 
         if (response.status === 200) {
@@ -31,10 +31,10 @@ export const useMapsAndAvatars = (token: string | null) => {
     const fetchAvatars = async () => {
       try {
         const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/avatars`,
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/avatars`,
           {
             headers: { Authorization: `Bearer ${token}` },
-          }
+          },
         );
 
         if (response.status === 201) {
