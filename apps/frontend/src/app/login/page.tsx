@@ -24,7 +24,7 @@ const LoginForm = () => {
 
     try {
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/auth/signin`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/auth/signin`,
         { username, password },
       );
 

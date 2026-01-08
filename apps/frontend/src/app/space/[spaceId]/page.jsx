@@ -114,7 +114,7 @@ export default function SpacePage() {
 
     // Task 1: Fetch space data
     axios
-      .get(`${process.env.NEXT_PUBLIC_BASE_URL}/space/${spaceId}`, {
+      .get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/space/${spaceId}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((response) => {
@@ -186,7 +186,7 @@ export default function SpacePage() {
     // Task 3: Fetch avatars (if needed)
     if (!hasAvatar) {
       axios
-        .get(`${process.env.NEXT_PUBLIC_BASE_URL}/avatars`, {
+        .get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/avatars`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then((response) => {
@@ -309,7 +309,7 @@ export default function SpacePage() {
     try {
       const token = getAuthToken();
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/user/metadata`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/user/metadata`,
         { avatarId: selectedAvatar },
         { headers: { Authorization: `Bearer ${token}` } },
       );

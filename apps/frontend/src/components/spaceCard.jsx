@@ -54,12 +54,12 @@ const MySpace = ({ title, spaces, token, router, msg, onSpaceDeleted }) => {
 
     try {
       const response = await axios.delete(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/space/${spaceToDelete.id}`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/space/${spaceToDelete.id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       if (response.status === 200) {
@@ -87,9 +87,7 @@ const MySpace = ({ title, spaces, token, router, msg, onSpaceDeleted }) => {
             <div key={space?.id} className="flex flex-col">
               <div
                 className="relative aspect-video bg-black rounded-lg shadow-lg overflow-hidden cursor-pointer transition-transform duration-200 hover:scale-105"
-                onClick={() =>
-                  router.push(`/space/${space?.id}`)
-                }
+                onClick={() => router.push(`/space/${space?.id}`)}
               >
                 <img
                   src={`${process.env.NEXT_PUBLIC_BASE_URL}${space?.map?.imageUrl}`}
@@ -143,7 +141,9 @@ const MySpace = ({ title, spaces, token, router, msg, onSpaceDeleted }) => {
           <DialogTitle className="text-xl font-bold">Delete Space</DialogTitle>
           <div className="mt-4">
             <p className="text-sm text-gray-600">
-              Are you sure you want to delete <span className="font-semibold">{spaceToDelete?.name}</span>? This action cannot be undone.
+              Are you sure you want to delete{" "}
+              <span className="font-semibold">{spaceToDelete?.name}</span>? This
+              action cannot be undone.
             </p>
           </div>
           <div className="flex gap-3 mt-6">
@@ -158,7 +158,9 @@ const MySpace = ({ title, spaces, token, router, msg, onSpaceDeleted }) => {
               disabled={deletingId === spaceToDelete?.id}
               className="flex-1 bg-red-600 text-white rounded-xl py-3 font-semibold hover:bg-red-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {deletingId === spaceToDelete?.id ? "Deleting..." : "Delete Space"}
+              {deletingId === spaceToDelete?.id
+                ? "Deleting..."
+                : "Delete Space"}
             </button>
           </div>
         </DialogContent>
@@ -195,12 +197,12 @@ const RecentSpace = ({ title, spaces, token, router, msg, onSpaceLeft }) => {
 
     try {
       const response = await axios.delete(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/space/recent/${spaceToLeave.space.id}`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/space/recent/${spaceToLeave.space.id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       if (response.status === 200) {
@@ -228,9 +230,7 @@ const RecentSpace = ({ title, spaces, token, router, msg, onSpaceLeft }) => {
             <div key={space?.id} className="flex flex-col">
               <div
                 className="relative aspect-video bg-black rounded-lg shadow-lg overflow-hidden cursor-pointer transition-transform duration-200 hover:scale-105"
-                onClick={() =>
-                  router.push(`/space/${space?.space?.id}`)
-                }
+                onClick={() => router.push(`/space/${space?.space?.id}`)}
               >
                 <img
                   src={`${process.env.NEXT_PUBLIC_BASE_URL}${space?.space?.map?.imageUrl}`}
@@ -287,7 +287,9 @@ const RecentSpace = ({ title, spaces, token, router, msg, onSpaceLeft }) => {
           <DialogTitle className="text-xl font-bold">Leave Space</DialogTitle>
           <div className="mt-4">
             <p className="text-sm text-gray-600">
-              Are you sure you want to leave <span className="font-semibold">{spaceToLeave?.space?.name}</span>?
+              Are you sure you want to leave{" "}
+              <span className="font-semibold">{spaceToLeave?.space?.name}</span>
+              ?
             </p>
           </div>
           <div className="flex gap-3 mt-6">
@@ -302,7 +304,9 @@ const RecentSpace = ({ title, spaces, token, router, msg, onSpaceLeft }) => {
               disabled={leavingId === spaceToLeave?.space?.id}
               className="flex-1 bg-red-600 text-white rounded-xl py-3 font-semibold hover:bg-red-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {leavingId === spaceToLeave?.space?.id ? "Leaving..." : "Leave Space"}
+              {leavingId === spaceToLeave?.space?.id
+                ? "Leaving..."
+                : "Leave Space"}
             </button>
           </div>
         </DialogContent>

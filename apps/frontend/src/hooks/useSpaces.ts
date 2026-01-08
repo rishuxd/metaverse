@@ -13,10 +13,10 @@ export const useSpaces = (token: string | null) => {
 
     try {
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/space/all`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/space/all`,
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
       if (response.status === 200) {
         setSpaces(response.data.data.spaces);
@@ -32,10 +32,10 @@ export const useSpaces = (token: string | null) => {
 
     try {
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/space/recent`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/space/recent`,
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
       if (response.status === 200) {
         setRecentSpaces(response.data.data.recentSpaces);

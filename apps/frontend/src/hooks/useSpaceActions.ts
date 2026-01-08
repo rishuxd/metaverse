@@ -17,7 +17,7 @@ export const useSpaceActions = (onSpaceCreated?: () => void) => {
     try {
       const token = getAuthToken();
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/space`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/space`,
         { name, mapId },
         {
           headers: { Authorization: `Bearer ${token}` },

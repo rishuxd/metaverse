@@ -35,11 +35,11 @@ export const AvatarSelectionDialog: React.FC<AvatarSelectionDialogProps> = ({
 
     try {
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/user/metadata`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/user/metadata`,
         { avatarId: selectedAvatar },
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
       if (response.status === 201) {
         onAvatarUpdate(response.data.data.imageUrl);
@@ -60,8 +60,12 @@ export const AvatarSelectionDialog: React.FC<AvatarSelectionDialogProps> = ({
         </button>
       </DialogTrigger>
       <DialogContent className="p-7">
-        <DialogTitle className="text-xl font-bold">Choose Your Avatar</DialogTitle>
-        <p className="text-sm text-gray-600 mt-1">Select an avatar to represent you</p>
+        <DialogTitle className="text-xl font-bold">
+          Choose Your Avatar
+        </DialogTitle>
+        <p className="text-sm text-gray-600 mt-1">
+          Select an avatar to represent you
+        </p>
         <div className="grid grid-cols-3 gap-4 mt-6">
           {avatars.map((avatar) => (
             <div

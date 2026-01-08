@@ -24,7 +24,7 @@ const SignupForm = () => {
 
     try {
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/auth/signup`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/auth/signup`,
         { username, password },
       );
 
