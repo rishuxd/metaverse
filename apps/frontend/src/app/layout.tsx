@@ -74,15 +74,43 @@ export const metadata: Metadata = {
   appleWebApp: {
     title: "Rishu's Town",
   },
+  metadataBase: new URL("https://spaces.rishuffled.in"),
+  alternates: {
+    canonical: "/",
+  },
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: "Rishu's Town",
+              url: "https://spaces.rishuffled.in",
+              alternateName: ["Rishu Town", "Rishus Town"],
+              publisher: {
+                "@type": "Organization",
+                name: "Rishu's Town",
+                url: "https://spaces.rishuffled.in",
+                logo: {
+                  "@type": "ImageObject",
+                  url: "https://spaces.rishuffled.in/favicon-96x96.png",
+                },
+              },
+            }),
+          }}
+        />
+      </head>
+
       <body className={`${montserrat.variable} antialiased`}>{children}</body>
     </html>
   );
