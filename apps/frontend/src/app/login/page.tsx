@@ -12,6 +12,7 @@ const LoginForm = () => {
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [error, setError] = useState<string>("");
+  const [successMessage, setSuccessMessage] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -21,6 +22,7 @@ const LoginForm = () => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
+    setSuccessMessage("");
 
     try {
       const response = await axios.post(
@@ -38,8 +40,12 @@ const LoginForm = () => {
         localStorage.setItem("username", response.data.data.username);
         localStorage.setItem("avatarUrl", response.data.data.avatarUrl);
 
+        setSuccessMessage("Login successful! Redirecting...");
+
         // Redirect to original page or dashboard
-        router.push(redirect || "/dashboard");
+        setTimeout(() => {
+          router.push(redirect || "/dashboard");
+        }, 1500);
       }
     } catch (err: any) {
       setError(
@@ -51,36 +57,41 @@ const LoginForm = () => {
   };
 
   return (
-    <AuthLayout title="Sign In" avatarImage="/assets/avatars/avatar3.png">
+    <AuthLayout
+      title="Welcome!"
+      subtitle="Step back into the Town."
+      avatarImage="/assets/avatars/avatar3.png"
+    >
       <form onSubmit={handleLogin} className="space-y-8">
         <Input
           id="username"
-          label="User Alias"
+          label="User name"
           icon="id_card"
           type="text"
-          placeholder="Enter your world name"
+          placeholder="Enter your user name"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           required
         />
         <Input
           id="password"
-          label="Security Key"
+          label="Password"
           icon="lock"
           type="password"
-          placeholder="Choose a secret code"
+          placeholder="Enter your password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
         />
+        {successMessage && <Alert variant="success">{successMessage}</Alert>}
         {error && <Alert variant="error">{error}</Alert>}
         <Button type="submit" isLoading={isLoading}>
-          Enter Metaverse
+          Enter Town
         </Button>
       </form>
-      <div className="mt-10 pt-8 border-t border-slate-200/30 text-center">
+      <div className="mt-10 pt-8 border-t border-slate-200/30 dark:border-white/10 text-center">
         <p className="text-slate-500 text-sm">
-          Part of the community?{" "}
+          New to the town?{" "}
           <a
             href={
               redirect
@@ -89,7 +100,7 @@ const LoginForm = () => {
             }
             className="text-teal-600 font-bold hover:underline"
           >
-            Create Account
+            Sign Up
           </a>
         </p>
       </div>

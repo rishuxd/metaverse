@@ -5,7 +5,7 @@ import ApiResponse from "../../utils/apiResponse";
 
 const getOtherUserMetadata = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   const userIdString = (req.query.ids ?? "[]") as string;
   const userIds = userIdString.slice(1, userIdString.length - 1).split(",");
@@ -30,13 +30,13 @@ const getOtherUserMetadata = async (
     res.status(201).json(
       new ApiResponse(201, "Users metadata fetched.", {
         users,
-      })
+      }),
     );
     return;
   } catch (error) {
     res
       .status(500)
-      .json(new ApiError(500, "Failed to users metadata, try later!"));
+      .json(new ApiError(500, "Failed to fetch users metadata, try later!"));
     return;
   }
 };

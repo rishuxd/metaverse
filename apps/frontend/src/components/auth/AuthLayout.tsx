@@ -1,54 +1,73 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 
 interface AuthLayoutProps {
   title: string;
+  subtitle?: string;
   avatarImage: string;
   children: React.ReactNode;
 }
 
 export const AuthLayout: React.FC<AuthLayoutProps> = ({
   title,
+  subtitle = "Initialize your digital existence",
   avatarImage,
   children,
 }) => {
   const { theme, setTheme } = useTheme();
-  const isDark = theme === "dark";
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const toggleDarkMode = () => {
-    setTheme(isDark ? "light" : "dark");
+    setTheme(theme === "dark" ? "light" : "dark");
     console.log("Dark mode toggled");
   };
 
   return (
     <div
-      className="min-h-screen relative overflow-hidden transition-colors duration-500 flex flex-col"
+      className="min-h-screen relative overflow-hidden transition-colors duration-200 flex flex-col"
       style={{
-        background: isDark
-          ? "linear-gradient(135deg, #0c4a6e 0%, #78350f 100%)"
-          : "linear-gradient(135deg, #bae6fd 0%, #fde68a 100%)",
+        background: "var(--auth-bg-light)",
       }}
     >
+      {/* Dark Mode Gradient Overlay */}
+      <div
+        className="absolute inset-0 transition-opacity duration-200 opacity-0 dark:opacity-100 z-0"
+        style={{
+          background: "var(--auth-bg-dark)",
+        }}
+      />
+
       {/* Background Elements */}
       <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
         <div
           className="absolute inset-0 opacity-50"
           style={{
-            backgroundImage: isDark
-              ? "linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px)"
-              : "linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px)",
+            backgroundImage: "var(--auth-bg-overlay)",
             backgroundSize: "40px 40px",
           }}
         />
-        <span className="absolute text-[240px] opacity-50 dark:opacity-30 top-[-40px] left-[5%] blur-sm select-none">
+        <span
+          className="absolute text-[240px] opacity-50 dark:opacity-30 top-[-40px] left-[5%] blur-sm select-none"
+          style={{ opacity: "var(--auth-cloud-opacity)" }}
+        >
           ☁️
         </span>
-        <span className="absolute text-[300px] opacity-60 dark:opacity-40 top-20 right-[10%] blur-sm select-none">
+        <span
+          className="absolute text-[300px] opacity-60 dark:opacity-40 top-20 right-[10%] blur-sm select-none"
+          style={{ opacity: "var(--auth-cloud-opacity)" }}
+        >
           ☁️
         </span>
-        <span className="absolute text-[180px] opacity-45 dark:opacity-25 bottom-10 left-[15%] blur-md select-none">
+        <span
+          className="absolute text-[180px] opacity-45 dark:opacity-25 bottom-10 left-[15%] blur-md select-none"
+          style={{ opacity: "var(--auth-cloud-opacity)" }}
+        >
           ☁️
         </span>
         <div className="absolute bg-green-500/20 dark:bg-green-500/10 rounded-[2rem] border-b-8 border-green-600/30 w-96 h-24 top-[15%] left-[5%] -rotate-2"></div>
@@ -68,26 +87,26 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
       </div>
 
       {/* Header */}
-      <header className="p-8 flex justify-between items-center relative z-10">
+      <header className="h-[120px] p-8 flex justify-between items-center relative z-10">
         <div className="flex items-center gap-4 bg-white/20 dark:bg-black/20 backdrop-blur-md px-6 py-4 rounded-full border border-white/30">
           <span className="material-symbols-outlined text-teal-500 text-3xl">
             eco
           </span>
           <span className="text-sm font-light tracking-tight text-slate-800 dark:text-white uppercase">
-            Rishu's World
+            Rishu's Town
           </span>
         </div>
         <button
           onClick={toggleDarkMode}
-          className="p-4 rounded-2xl backdrop-blur-xl bg-white/40 dark:bg-black/40 border border-white/50 dark:border-white/10 hover:scale-105 transition-all group"
+          className="w-14 h-14 flex items-center justify-center rounded-2xl backdrop-blur-xl bg-white/40 dark:bg-black/40 border border-white/50 dark:border-white/10 hover:scale-105 transition-all group p-0"
         >
-          {isDark ? (
-            <span className="material-symbols-outlined text-yellow-400 group-hover:rotate-12 transition-transform">
-              light_mode
-            </span>
-          ) : (
-            <span className="material-symbols-outlined text-sky-900 group-hover:rotate-12 transition-transform">
-              dark_mode
+          {mounted && (
+            <span className="material-symbols-outlined group-hover:rotate-12 transition-transform text-[24px] leading-none">
+              {theme === "dark" ? (
+                <span className="text-yellow-400">light_mode</span>
+              ) : (
+                <span className="text-sky-900">dark_mode</span>
+              )}
             </span>
           )}
         </button>
@@ -98,7 +117,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
         <div className="w-full max-w-4xl grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* Left Side - Description Card */}
           <div className="hidden lg:block space-y-8">
-            <div className="backdrop-blur-xl bg-white/40 dark:bg-black/40 border border-white/50 dark:border-white/10 p-8 rounded-[3rem] space-y-6 max-w-md">
+            <div className="backdrop-blur-xl bg-white/40 dark:bg-black/40 border-2 border-white/50 dark:border-white/10 p-8 rounded-[3rem] space-y-6 max-w-md">
               <div className="flex gap-4">
                 <div className="w-14 h-14 bg-blue-100 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center shadow-lg">
                   <span className="material-symbols-outlined text-blue-500">
@@ -117,12 +136,12 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
                 </div>
               </div>
               <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white leading-tight">
-                Build Your <span className="text-teal-500">Identity</span> in
-                the Pixelverse.
+                Build Your <span className="text-teal-500">Space</span> in the
+                Town.
               </h1>
               <p className="text-slate-600 dark:text-slate-300 text-lg">
-                Claim your spot in our growing digital neighborhood. Personalize
-                your presence and start exploring.
+                Explore interactive 2D spaces, hang out with friends, and
+                connect with people in real time inside a shared virtual town.
               </p>
             </div>
           </div>
@@ -132,14 +151,12 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
             <div className="absolute -top-10 -right-10 w-32 h-32 bg-yellow-400/20 blur-3xl rounded-full"></div>
             <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-teal-500/20 blur-3xl rounded-full"></div>
 
-            <div className="backdrop-blur-xl bg-white/40 dark:bg-black/40 border border-white/50 dark:border-white/10 p-10 lg:p-12 rounded-[3.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] relative z-10">
+            <div className="backdrop-blur-xl bg-white/40 dark:bg-black/40 border-2 border-white/50 dark:border-white/10 p-10 lg:p-12 rounded-[3.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] relative z-10">
               <div className="mb-10 text-center lg:text-left">
                 <h2 className="text-sm font-black text-slate-900 dark:text-white mb-2 uppercase tracking-widest">
                   {title}
                 </h2>
-                <p className="text-slate-500 dark:text-slate-400">
-                  Initialize your digital existence
-                </p>
+                <p className="text-slate-500 dark:text-slate-400">{subtitle}</p>
               </div>
               {children}
             </div>
@@ -235,7 +252,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
           <div className="text-slate-600 dark:text-slate-400 text-sm font-medium mb-1">
             PseudoRishi
           </div>
-          <div className="text-slate-500/50 dark:text-slate-400/30 text-[10px] uppercase tracking-widest">
+          <div className="text-slate-600 dark:text-slate-400 text-[10px] uppercase tracking-widest">
             V1.0.4
           </div>
         </div>

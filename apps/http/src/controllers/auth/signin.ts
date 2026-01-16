@@ -10,7 +10,7 @@ import { config } from "../../config/constants";
 const signin = async (req: Request, res: Response): Promise<void> => {
   const parsedDate = SigninSchema.safeParse(req.body);
   if (!parsedDate.success) {
-    res.status(400).json(new ApiError(400, "Invalid data", parsedDate.error));
+    res.status(400).json(new ApiError(400, "Invalid data!", parsedDate.error));
     return;
   }
 
@@ -25,13 +25,17 @@ const signin = async (req: Request, res: Response): Promise<void> => {
     });
 
     if (!user) {
-      res.status(404).json(new ApiError(404, "User not found"));
+      res
+        .status(401)
+        .json(new ApiError(401, "Incorrect username or password!"));
       return;
     }
 
     const isValid = await compare(parsedDate.data.password, user.password);
     if (!isValid) {
-      res.status(401).json(new ApiError(401, "Invalid password"));
+      res
+        .status(401)
+        .json(new ApiError(401, "Incorrect username or password!"));
       return;
     }
 
@@ -45,7 +49,7 @@ const signin = async (req: Request, res: Response): Promise<void> => {
       }),
     );
   } catch (error) {
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: "Internal Server Error, try again later!" });
     return;
   }
 };

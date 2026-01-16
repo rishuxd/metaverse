@@ -10,6 +10,26 @@
         "opsz" 24;
 }
 
+.material-symbols-filled {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+    font-variation-settings:
+        "FILL" 1,
+        "wght" 400,
+        "GRAD" 0,
+        "opsz" 24;
+}
+
 body {
     color: #1f2937;
     font-family: "Montserrat", serif;
@@ -104,5 +124,15 @@ canvas {
     }
     body {
         @apply bg-background text-foreground;
+    }
+    :root {
+        --auth-bg-light: linear-gradient(135deg, #bae6fd 0%, #fde68a 100%);
+        --auth-bg-dark: linear-gradient(135deg, #0c4a6e 0%, #78350f 100%);
+        --auth-bg-overlay: linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+        --auth-cloud-opacity: 0.5;
+    }
+    .dark {
+        --auth-bg-overlay: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+        --auth-cloud-opacity: 0.3;
     }
 }

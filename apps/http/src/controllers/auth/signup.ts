@@ -8,7 +8,7 @@ import { hash } from "../../utils/scrypt";
 const signup = async (req: Request, res: Response): Promise<void> => {
   const parsedDate = SignupSchema.safeParse(req.body);
   if (!parsedDate.success) {
-    res.status(400).json(new ApiError(400, "Invalid data", parsedDate.error));
+    res.status(400).json(new ApiError(400, "Invalid data!", parsedDate.error));
     return;
   }
 
@@ -26,7 +26,7 @@ const signup = async (req: Request, res: Response): Promise<void> => {
     res.status(201).json(
       new ApiResponse(201, "User created successfully", {
         userId: user.id,
-      })
+      }),
     );
     return;
   } catch (error) {

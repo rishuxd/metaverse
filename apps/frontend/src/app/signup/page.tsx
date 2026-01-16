@@ -44,8 +44,10 @@ const SignupForm = () => {
         }, 1500);
       }
     } catch (err: any) {
+      const errorData = err.response?.data;
+      const zodError = errorData?.data?.issues?.[0]?.message;
       setError(
-        err.response?.data?.message || "Signup failed. Please try again.",
+        zodError || errorData?.message || "Signup failed. Please try again.",
       );
     } finally {
       setIsLoading(false);
@@ -54,26 +56,27 @@ const SignupForm = () => {
 
   return (
     <AuthLayout
-      title="Create Account"
+      title="Join the Town"
+      subtitle="Claim your spot in the neighborhood."
       avatarImage="/assets/avatars/avatar4.png"
     >
       <form onSubmit={handleSignup} className="space-y-8">
         <Input
           id="username"
-          label="User Alias"
+          label="User name"
           icon="id_card"
           type="text"
-          placeholder="Enter your world name"
+          placeholder="Choose a user name"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           required
         />
         <Input
           id="password"
-          label="Security Key"
+          label="Password"
           icon="lock"
           type="password"
-          placeholder="Choose a secret code"
+          placeholder="Choose a password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
@@ -81,12 +84,12 @@ const SignupForm = () => {
         {successMessage && <Alert variant="success">{successMessage}</Alert>}
         {error && <Alert variant="error">{error}</Alert>}
         <Button type="submit" isLoading={isLoading}>
-          Enter Metaverse
+          Get Registered
         </Button>
       </form>
-      <div className="mt-10 pt-8 border-t border-slate-200/30 text-center">
+      <div className="mt-10 pt-8 border-t border-slate-200/30 dark:border-white/10 text-center">
         <p className="text-slate-500 text-sm">
-          Already have an account?{" "}
+          Part of the town?{" "}
           <a
             href={
               redirect

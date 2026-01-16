@@ -19,7 +19,7 @@ const leaveRecentSpace = async (req: Request, res: Response): Promise<void> => {
     });
 
     if (!userSpace) {
-      res.json(new ApiError(404, "You haven't joined this space"));
+      res.json(new ApiError(404, "You haven't joined this space!"));
       return;
     }
 
@@ -36,7 +36,7 @@ const leaveRecentSpace = async (req: Request, res: Response): Promise<void> => {
     res.json(
       new ApiResponse(200, "Successfully left the space", {
         spaceId,
-      })
+      }),
     );
     return;
   } catch (error) {

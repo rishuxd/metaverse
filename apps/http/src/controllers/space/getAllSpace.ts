@@ -17,11 +17,11 @@ const getAllSpace = async (req: Request, res: Response): Promise<void> => {
     res.json(
       new ApiResponse(200, "Spaces fetched successfully", {
         spaces,
-      })
+      }),
     );
     return;
   } catch (error) {
-    res.json(new ApiError(500, "Failed to fetch spaces, try later", error));
+    res.json(new ApiError(500, "Failed to fetch spaces, try later!", error));
     return;
   }
 };

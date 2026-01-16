@@ -13,10 +13,10 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={props.id}
-            className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400 mb-3 ml-2 uppercase tracking-widest"
+            className="flex items-center gap-2 text-xs font-light text-slate-500 dark:text-slate-400 mb-3 ml-2 uppercase tracking-widest"
           >
             {icon && (
-              <span className="material-symbols-outlined text-sm">{icon}</span>
+              <span className="material-symbols-filled text-lg">{icon}</span>
             )}
             {label}
           </label>
