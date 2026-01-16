@@ -2,29 +2,38 @@ import React from "react";
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
+  icon?: string;
   error?: string;
 }
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, className = "", ...props }, ref) => {
+  ({ label, icon, error, className = "", ...props }, ref) => {
     return (
-      <div className="flex flex-col gap-2">
+      <div className="group">
         {label && (
-          <label htmlFor={props.id} className="text-gray-700 text-sm font-medium">
+          <label
+            htmlFor={props.id}
+            className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400 mb-3 ml-2 uppercase tracking-widest"
+          >
+            {icon && (
+              <span className="material-symbols-outlined text-sm">{icon}</span>
+            )}
             {label}
           </label>
         )}
-        <input
-          ref={ref}
-          className={`rounded-xl p-3 text-gray-900 border-gray-300 border-2 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600 transition-all ${className}`}
-          {...props}
-        />
+        <div className="relative">
+          <input
+            ref={ref}
+            className={`w-full px-6 py-5 rounded-[2rem] border-2 border-slate-200/50 dark:border-white/10 bg-white/50 dark:bg-black/40 text-slate-900 dark:text-white placeholder-slate-400 focus:border-teal-600 focus:bg-white dark:focus:bg-black focus:ring-0 transition-all outline-none ${className}`}
+            {...props}
+          />
+        </div>
         {error && (
-          <span className="text-red-600 text-sm">{error}</span>
+          <span className="text-red-600 text-sm ml-2 mt-2 block">{error}</span>
         )}
       </div>
     );
-  }
+  },
 );
 
 Input.displayName = "Input";

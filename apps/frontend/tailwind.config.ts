@@ -9,6 +9,10 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        display: ["var(--font-display)", "sans-serif"],
+        pixel: ["var(--font-pixel)", "cursive"],
+      },
       colors: {
         first: "var(--first)",
         second: "var(--second)",

@@ -57,21 +57,23 @@ const SignupForm = () => {
       title="Create Account"
       avatarImage="/assets/avatars/avatar4.png"
     >
-      <form onSubmit={handleSignup} className="flex flex-col gap-5 w-full">
+      <form onSubmit={handleSignup} className="space-y-8">
         <Input
           id="username"
-          label="Username"
+          label="User Alias"
+          icon="id_card"
           type="text"
-          placeholder="Choose a username"
+          placeholder="Enter your world name"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           required
         />
         <Input
           id="password"
-          label="Password"
+          label="Security Key"
+          icon="lock"
           type="password"
-          placeholder="Create a password"
+          placeholder="Choose a secret code"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
@@ -79,22 +81,24 @@ const SignupForm = () => {
         {successMessage && <Alert variant="success">{successMessage}</Alert>}
         {error && <Alert variant="error">{error}</Alert>}
         <Button type="submit" isLoading={isLoading}>
-          Sign Up
+          Enter Metaverse
         </Button>
       </form>
-      <p className="text-gray-600 mt-6 text-sm">
-        Already have an account?{" "}
-        <a
-          href={
-            redirect
-              ? `/login?redirect=${encodeURIComponent(redirect)}`
-              : "/login"
-          }
-          className="text-teal-600 font-semibold hover:underline"
-        >
-          Sign In
-        </a>
-      </p>
+      <div className="mt-10 pt-8 border-t border-slate-200/30 text-center">
+        <p className="text-slate-500 text-sm">
+          Already have an account?{" "}
+          <a
+            href={
+              redirect
+                ? `/login?redirect=${encodeURIComponent(redirect)}`
+                : "/login"
+            }
+            className="text-teal-600 font-bold hover:underline"
+          >
+            Sign In
+          </a>
+        </p>
+      </div>
     </AuthLayout>
   );
 };

@@ -51,44 +51,48 @@ const LoginForm = () => {
   };
 
   return (
-    <AuthLayout title="Welcome Back" avatarImage="/assets/avatars/avatar3.png">
-      <form onSubmit={handleLogin} className="flex flex-col gap-5 w-full">
+    <AuthLayout title="Sign In" avatarImage="/assets/avatars/avatar3.png">
+      <form onSubmit={handleLogin} className="space-y-8">
         <Input
           id="username"
-          label="Username"
+          label="User Alias"
+          icon="id_card"
           type="text"
-          placeholder="Enter your username"
+          placeholder="Enter your world name"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           required
         />
         <Input
           id="password"
-          label="Password"
+          label="Security Key"
+          icon="lock"
           type="password"
-          placeholder="Enter your password"
+          placeholder="Choose a secret code"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
         />
         {error && <Alert variant="error">{error}</Alert>}
         <Button type="submit" isLoading={isLoading}>
-          Sign In
+          Enter Metaverse
         </Button>
       </form>
-      <p className="text-gray-600 mt-6 text-sm">
-        Don't have an account?{" "}
-        <a
-          href={
-            redirect
-              ? `/signup?redirect=${encodeURIComponent(redirect)}`
-              : "/signup"
-          }
-          className="text-teal-600 font-semibold hover:underline"
-        >
-          Sign Up
-        </a>
-      </p>
+      <div className="mt-10 pt-8 border-t border-slate-200/30 text-center">
+        <p className="text-slate-500 text-sm">
+          Part of the community?{" "}
+          <a
+            href={
+              redirect
+                ? `/signup?redirect=${encodeURIComponent(redirect)}`
+                : "/signup"
+            }
+            className="text-teal-600 font-bold hover:underline"
+          >
+            Create Account
+          </a>
+        </p>
+      </div>
     </AuthLayout>
   );
 };
