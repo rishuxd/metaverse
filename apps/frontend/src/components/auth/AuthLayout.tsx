@@ -14,38 +14,45 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
 }) => {
   return (
     <div
-      className="flex items-center justify-center h-screen bg-cover bg-center"
+      className="flex items-center justify-center h-screen bg-cover bg-center px-8"
       style={{
         backgroundImage: 'url("/assets/sprites/sky.png")',
       }}
     >
-      <div className="flex flex-col items-center justify-between h-auto w-full max-w-md py-8 px-12 rounded-3xl bg-white shadow-2xl">
-        <Image
-          src="/leaf.png"
-          alt="Rishu's Town Logo"
-          width={48}
-          height={48}
-          className="mb-4"
-          style={{ imageRendering: "auto" }}
-        />
-        <Image
-          src="/og-image.png"
-          alt="Rishu's Town - Interactive Virtual Spaces"
-          width={400}
-          height={210}
-          className="mb-6 rounded-xl shadow-lg"
-        />
-        <div className="w-24 h-10 mb-6 relative">
-          <div
-            className="absolute w-full h-full scale-[2]"
-            style={{
-              marginLeft: 5,
-              backgroundImage: `url("${avatarImage}")`,
-            }}
+      <div className="flex items-center gap-8 max-w-6xl w-full">
+        {/* Login/Signup Card - Left Side */}
+        <div className="flex flex-col items-center justify-between h-auto w-full max-w-md py-8 px-12 rounded-3xl bg-white shadow-2xl">
+          <Image
+            src="/leaf.png"
+            alt="Rishu's Town Logo"
+            width={48}
+            height={48}
+            className="mb-4"
+            style={{ imageRendering: "auto" }}
+          />
+          <div className="w-24 h-10 mb-6 relative">
+            <div
+              className="absolute w-full h-full scale-[2]"
+              style={{
+                marginLeft: 5,
+                backgroundImage: `url("${avatarImage}")`,
+              }}
+            />
+          </div>
+          <h1 className="mb-6 text-2xl font-bold text-gray-900">{title}</h1>
+          {children}
+        </div>
+
+        {/* OG Image - Right Side */}
+        <div className="hidden lg:block">
+          <Image
+            src="/og-image.png"
+            alt="Rishu's Town - Interactive Virtual Spaces"
+            width={600}
+            height={315}
+            className="rounded-2xl shadow-2xl"
           />
         </div>
-        <h1 className="mb-6 text-2xl font-bold text-gray-900">{title}</h1>
-        {children}
       </div>
     </div>
   );
