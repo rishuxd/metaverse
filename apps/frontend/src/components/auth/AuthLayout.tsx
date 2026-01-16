@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 
 interface AuthLayoutProps {
   title: string;
@@ -19,6 +20,21 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
       }}
     >
       <div className="flex flex-col items-center justify-between h-auto w-full max-w-md py-8 px-12 rounded-3xl bg-white shadow-2xl">
+        <Image
+          src="/leaf.png"
+          alt="Rishu's Town Logo"
+          width={48}
+          height={48}
+          className="mb-4"
+          style={{ imageRendering: "auto" }}
+        />
+        <Image
+          src="/og-image.png"
+          alt="Rishu's Town - Interactive Virtual Spaces"
+          width={400}
+          height={210}
+          className="mb-6 rounded-xl shadow-lg"
+        />
         <div className="w-24 h-10 mb-6 relative">
           <div
             className="absolute w-full h-full scale-[2]"
