@@ -12,6 +12,7 @@ const SignupForm = () => {
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [error, setError] = useState<string>("");
+  const [successMessage, setSuccessMessage] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -21,6 +22,7 @@ const SignupForm = () => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
+    setSuccessMessage("");
 
     try {
       const response = await axios.post(
@@ -29,11 +31,17 @@ const SignupForm = () => {
       );
 
       if (response.status === 201) {
-        // Redirect to login with the same redirect parameter if it exists
-        const loginUrl = redirect
-          ? `/login?redirect=${encodeURIComponent(redirect)}`
-          : "/login";
-        router.push(loginUrl);
+        setSuccessMessage(
+          "Account created successfully! Redirecting to login...",
+        );
+
+        // Wait 1.5 seconds to show success message, then redirect
+        setTimeout(() => {
+          const loginUrl = redirect
+            ? `/login?redirect=${encodeURIComponent(redirect)}`
+            : "/login";
+          router.push(loginUrl);
+        }, 1500);
       }
     } catch (err: any) {
       setError(
@@ -68,6 +76,7 @@ const SignupForm = () => {
           onChange={(e) => setPassword(e.target.value)}
           required
         />
+        {successMessage && <Alert variant="success">{successMessage}</Alert>}
         {error && <Alert variant="error">{error}</Alert>}
         <Button type="submit" isLoading={isLoading}>
           Sign Up
