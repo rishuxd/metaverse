@@ -134,9 +134,9 @@ canvas {
         --auth-cloud-opacity: 0.5;
         --dashboard-bg-light: linear-gradient(
             135deg,
-            #c4b5fd 0%,
-            #a78bfa 50%,
-            #8b5cf6 100%
+            #e9d5ff 0%,
+            #d8b4fe 50%,
+            #c4b5fd 100%
         );
         --dashboard-bg-dark: linear-gradient(
             135deg,
