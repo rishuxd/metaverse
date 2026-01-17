@@ -141,6 +141,16 @@ const Dashboard = () => {
         <div className="absolute top-[40%] right-[6%] w-20 h-20 backdrop-blur-xl bg-white/40 dark:bg-black/40 border border-white/50 dark:border-white/10 rounded-3xl flex items-center justify-center opacity-50">
           <span className="text-4xl select-none">🎮</span>
         </div>
+        {/* Center icons */}
+        <div className="absolute top-[30%] left-[45%] w-18 h-18 backdrop-blur-xl bg-white/40 dark:bg-black/40 border border-white/50 dark:border-white/10 rounded-2xl flex items-center justify-center opacity-30">
+          <span className="text-3xl select-none">🌟</span>
+        </div>
+        <div className="absolute top-[55%] left-[50%] w-16 h-16 backdrop-blur-xl bg-white/40 dark:bg-black/40 border border-white/50 dark:border-white/10 rounded-2xl flex items-center justify-center opacity-25 rotate-6">
+          <span className="text-3xl select-none">💫</span>
+        </div>
+        <div className="absolute top-[70%] left-[40%] w-14 h-14 backdrop-blur-xl bg-white/40 dark:bg-black/40 border border-white/50 dark:border-white/10 rounded-xl flex items-center justify-center opacity-30 -rotate-12">
+          <span className="text-2xl select-none">🎯</span>
+        </div>
       </div>
 
       {/* Header */}
