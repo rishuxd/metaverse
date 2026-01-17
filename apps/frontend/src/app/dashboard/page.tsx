@@ -123,6 +123,25 @@ const Dashboard = () => {
         </div>
 
         <div className="flex items-center gap-3">
+          {/* Avatar */}
+          <div className="w-12 h-12 rounded-full bg-white/40 dark:bg-black/40 backdrop-blur-md border border-white/50 dark:border-white/10 overflow-hidden relative">
+            <div
+              className="absolute w-full h-full scale-[2]"
+              style={{
+                marginLeft: 6,
+                backgroundImage: `url(${process.env.NEXT_PUBLIC_BASE_URL}${avatarUrl})`,
+              }}
+            />
+          </div>
+
+          {/* Username */}
+          <AvatarSelectionDialog
+            avatars={avatars}
+            token={token}
+            username={username}
+            onAvatarUpdate={updateAvatar}
+          />
+
           {/* Join Space Dialog */}
           <Dialog
             open={isJoinDialogOpen}
@@ -176,25 +195,6 @@ const Dashboard = () => {
             successMessage={successMessage}
             resetMessages={resetMessages}
           />
-
-          {/* Avatar and Username */}
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-white/40 dark:bg-black/40 backdrop-blur-md border border-white/50 dark:border-white/10 overflow-hidden relative">
-              <div
-                className="absolute w-full h-full scale-[2]"
-                style={{
-                  marginLeft: 6,
-                  backgroundImage: `url(${process.env.NEXT_PUBLIC_BASE_URL}${avatarUrl})`,
-                }}
-              />
-            </div>
-            <AvatarSelectionDialog
-              avatars={avatars}
-              token={token}
-              username={username}
-              onAvatarUpdate={updateAvatar}
-            />
-          </div>
 
           {/* Dark Mode Toggle */}
           <button
