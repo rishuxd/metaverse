@@ -134,17 +134,15 @@ canvas {
         --auth-cloud-opacity: 0.5;
         --dashboard-bg-light: linear-gradient(
             135deg,
-            #38bdf8 0%,
-            #818cf8 35%,
-            #c084fc 65%,
-            #f472b6 100%
+            #7dd3fc 0%,
+            #a5b4fc 50%,
+            #c4b5fd 100%
         );
         --dashboard-bg-dark: linear-gradient(
             135deg,
             #0c4a6e 0%,
-            #312e81 35%,
-            #581c87 65%,
-            #831843 100%
+            #1e1b4b 50%,
+            #2e1065 100%
         );
     }
     .dark {
