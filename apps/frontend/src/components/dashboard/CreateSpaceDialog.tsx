@@ -54,9 +54,9 @@ export const CreateSpaceDialog: React.FC<CreateSpaceDialogProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-4 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white font-semibold shadow-lg shadow-teal-500/20 hover:scale-[1.02] transition-all">
-          <PlusCircle size={20} />
-          <span>Create Space</span>
+        <button className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white font-semibold shadow-lg shadow-teal-500/20 hover:scale-105 transition-all">
+          <PlusCircle size={18} />
+          <span className="hidden sm:inline">Create</span>
         </button>
       </DialogTrigger>
       <DialogContent className="backdrop-blur-xl bg-white/90 dark:bg-slate-900/90 border-2 border-white/50 dark:border-white/10 rounded-[2rem] p-8 max-w-xl">
