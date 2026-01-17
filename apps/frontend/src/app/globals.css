@@ -11,7 +11,7 @@
 }
 
 .material-symbols-filled {
-    font-family: "Material Symbols Outlined";
+    font-family: 'Material Symbols Outlined';
     font-weight: normal;
     font-style: normal;
     line-height: 1;
@@ -21,7 +21,7 @@
     white-space: nowrap;
     word-wrap: normal;
     direction: ltr;
-    -webkit-font-feature-settings: "liga";
+    -webkit-font-feature-settings: 'liga';
     -webkit-font-smoothing: antialiased;
     font-variation-settings:
         "FILL" 1,
@@ -128,31 +128,11 @@ canvas {
     :root {
         --auth-bg-light: linear-gradient(135deg, #bae6fd 0%, #fde68a 100%);
         --auth-bg-dark: linear-gradient(135deg, #0c4a6e 0%, #78350f 100%);
-        --auth-bg-overlay:
-            linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+        --auth-bg-overlay: linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
         --auth-cloud-opacity: 0.5;
-        --dashboard-bg-light: linear-gradient(
-            135deg,
-            #e0f2fe 0%,
-            #c7d2fe 50%,
-            #ddd6fe 100%
-        );
-        --dashboard-bg-dark: linear-gradient(
-            135deg,
-            #0f172a 0%,
-            #1e1b4b 50%,
-            #1e1b4b 100%
-        );
     }
     .dark {
-        --auth-bg-overlay:
-            linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-            linear-gradient(
-                90deg,
-                rgba(255, 255, 255, 0.05) 1px,
-                transparent 1px
-            );
+        --auth-bg-overlay: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
         --auth-cloud-opacity: 0.3;
     }
 }
