@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { LogOut, PlusCircle, UserPlus, Search, Grid3X3 } from "lucide-react";
+import { LogOut, UserPlus, Search, Grid3X3 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import SpacesLayout from "@/components/spaceCard";
@@ -111,151 +111,143 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Header / Navbar */}
-      <header className="px-6 md:px-10 py-5 relative z-10">
-        <div className="max-w-7xl mx-auto">
-          <nav className="backdrop-blur-xl bg-white/50 dark:bg-black/30 border border-white/50 dark:border-white/10 rounded-2xl px-5 py-3 flex items-center justify-between">
-            {/* Logo */}
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-teal-400 to-teal-600 rounded-xl flex items-center justify-center shadow-lg shadow-teal-500/20">
-                <span className="material-symbols-outlined text-white text-xl">
-                  eco
-                </span>
-              </div>
-              <span className="text-sm font-semibold text-slate-800 dark:text-white hidden sm:block">
-                Rishu's Town
-              </span>
-            </div>
+      {/* Header */}
+      <header className="h-[100px] px-8 py-6 flex justify-between items-center relative z-10">
+        <div className="flex items-center gap-4 bg-white/20 dark:bg-black/20 backdrop-blur-md px-6 py-4 rounded-full border border-white/30">
+          <span className="material-symbols-outlined text-teal-500 text-3xl">
+            eco
+          </span>
+          <span className="text-sm font-light tracking-tight text-slate-800 dark:text-white uppercase">
+            Rishu's Town
+          </span>
+        </div>
 
-            {/* Center Actions */}
-            <div className="flex items-center gap-2">
-              {/* Join Space Dialog */}
-              <Dialog
-                open={isJoinDialogOpen}
-                onOpenChange={handleJoinDialogOpenChange}
-              >
-                <DialogTrigger asChild>
-                  <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/50 dark:bg-white/10 border border-white/50 dark:border-white/10 text-slate-700 dark:text-white text-sm font-medium hover:bg-white/70 dark:hover:bg-white/20 transition-all">
-                    <UserPlus size={18} />
-                    <span className="hidden sm:inline">Join</span>
-                  </button>
-                </DialogTrigger>
-                <DialogContent className="backdrop-blur-xl bg-white/95 dark:bg-slate-900/95 border border-white/50 dark:border-white/10 rounded-2xl p-6">
-                  <DialogTitle className="text-lg font-bold text-slate-900 dark:text-white">
-                    Join a Space
-                  </DialogTitle>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                    Enter the space ID to join
-                  </p>
-                  <div className="flex flex-col gap-3 mt-5">
-                    <div className="relative">
-                      <Search
-                        className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-                        size={18}
-                      />
-                      <input
-                        type="text"
-                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white/50 dark:bg-black/40 text-slate-900 dark:text-white placeholder-slate-400 focus:border-teal-500 focus:ring-0 transition-all outline-none text-sm"
-                        placeholder="Enter space ID"
-                        value={joinSpaceId}
-                        onChange={(e) => setJoinSpaceId(e.target.value)}
-                        disabled={isJoining}
-                      />
-                    </div>
-                    <button
-                      disabled={joinSpaceId === "" || isJoining}
-                      onClick={handleJoinSpace}
-                      className="w-full font-semibold py-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white shadow-lg shadow-teal-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-                    >
-                      {isJoining ? "Joining..." : "Join Space"}
-                    </button>
-                  </div>
-                </DialogContent>
-              </Dialog>
-
-              {/* Create Space Dialog */}
-              <CreateSpaceDialog
-                maps={maps}
-                onCreateSpace={createSpace}
-                isCreating={isCreating}
-                error={spaceError}
-                successMessage={successMessage}
-                resetMessages={resetMessages}
+        <div className="flex items-center gap-3">
+          {/* Avatar and Username */}
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-full bg-white/40 dark:bg-black/40 backdrop-blur-md border border-white/50 dark:border-white/10 overflow-hidden relative">
+              <div
+                className="absolute w-full h-full scale-[2]"
+                style={{
+                  marginLeft: 6,
+                  backgroundImage: `url(${process.env.NEXT_PUBLIC_BASE_URL}${avatarUrl})`,
+                }}
               />
             </div>
+            <AvatarSelectionDialog
+              avatars={avatars}
+              token={token}
+              username={username}
+              onAvatarUpdate={updateAvatar}
+            />
+          </div>
 
-            {/* Right Actions */}
-            <div className="flex items-center gap-2">
-              {/* Avatar and Username */}
-              <div className="flex items-center gap-2">
-                <div className="w-9 h-9 rounded-full bg-white/50 dark:bg-black/40 border border-white/50 dark:border-white/10 overflow-hidden relative">
-                  <div
-                    className="absolute w-full h-full scale-[2]"
-                    style={{
-                      marginLeft: 5,
-                      backgroundImage: `url(${process.env.NEXT_PUBLIC_BASE_URL}${avatarUrl})`,
-                    }}
-                  />
-                </div>
-                <AvatarSelectionDialog
-                  avatars={avatars}
-                  token={token}
-                  username={username}
-                  onAvatarUpdate={updateAvatar}
-                />
-              </div>
-
-              {/* Dark Mode Toggle */}
-              <button
-                onClick={toggleDarkMode}
-                className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/50 dark:bg-white/10 border border-white/50 dark:border-white/10 hover:bg-white/70 dark:hover:bg-white/20 transition-all"
-              >
-                {mounted && (
-                  <span className="material-symbols-outlined text-[20px]">
-                    {theme === "dark" ? (
-                      <span className="text-yellow-400">light_mode</span>
-                    ) : (
-                      <span className="text-slate-600">dark_mode</span>
-                    )}
-                  </span>
+          {/* Dark Mode Toggle */}
+          <button
+            onClick={toggleDarkMode}
+            className="w-12 h-12 flex items-center justify-center rounded-2xl backdrop-blur-xl bg-white/40 dark:bg-black/40 border border-white/50 dark:border-white/10 hover:scale-105 transition-all group p-0"
+          >
+            {mounted && (
+              <span className="material-symbols-outlined group-hover:rotate-12 transition-transform text-[24px] leading-none">
+                {theme === "dark" ? (
+                  <span className="text-yellow-400">light_mode</span>
+                ) : (
+                  <span className="text-sky-900">dark_mode</span>
                 )}
-              </button>
+              </span>
+            )}
+          </button>
 
-              {/* Logout Button */}
-              <button
-                onClick={logout}
-                className="w-9 h-9 flex items-center justify-center rounded-xl bg-red-500/10 dark:bg-red-500/20 border border-red-500/20 hover:bg-red-500/20 dark:hover:bg-red-500/30 transition-all text-red-600 dark:text-red-400"
-                title="Logout"
-              >
-                <LogOut size={18} />
-              </button>
-            </div>
-          </nav>
+          {/* Logout Button */}
+          <button
+            onClick={logout}
+            className="w-12 h-12 flex items-center justify-center rounded-2xl backdrop-blur-xl bg-red-500/20 dark:bg-red-500/30 border border-red-500/30 dark:border-red-500/20 hover:bg-red-500/30 dark:hover:bg-red-500/40 hover:scale-105 transition-all text-red-600 dark:text-red-400"
+            title="Logout"
+          >
+            <LogOut size={20} />
+          </button>
         </div>
       </header>
-
-      {/* Page Title */}
-      <div className="px-6 md:px-10 pt-4 pb-6 relative z-10">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-indigo-400 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
-              <Grid3X3 className="text-white" size={22} />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-                Your Spaces
-              </h1>
-              <p className="text-slate-500 dark:text-slate-400 text-sm">
-                Create and explore virtual environments
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Main Content */}
       <main className="flex-grow px-6 md:px-10 pb-10 relative z-10 overflow-y-auto">
         <div className="max-w-7xl mx-auto">
+          {/* Action Bar */}
+          <div className="backdrop-blur-xl bg-white/40 dark:bg-black/40 border-2 border-white/50 dark:border-white/10 p-6 rounded-[2rem] mb-8">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 bg-gradient-to-br from-indigo-400 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                  <Grid3X3 className="text-white" size={24} />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white">
+                    Your <span className="text-teal-500">Spaces</span>
+                  </h1>
+                  <p className="text-slate-600 dark:text-slate-400 text-sm">
+                    Create, join, and explore virtual spaces
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 w-full md:w-auto">
+                {/* Join Space Dialog */}
+                <Dialog
+                  open={isJoinDialogOpen}
+                  onOpenChange={handleJoinDialogOpenChange}
+                >
+                  <DialogTrigger asChild>
+                    <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-4 rounded-2xl backdrop-blur-xl bg-white/50 dark:bg-black/40 border-2 border-white/50 dark:border-white/10 text-slate-700 dark:text-white font-semibold hover:bg-white/70 dark:hover:bg-black/60 hover:scale-[1.02] transition-all">
+                      <UserPlus size={20} />
+                      <span>Join Space</span>
+                    </button>
+                  </DialogTrigger>
+                  <DialogContent className="backdrop-blur-xl bg-white/90 dark:bg-slate-900/90 border-2 border-white/50 dark:border-white/10 rounded-[2rem] p-8">
+                    <DialogTitle className="text-xl font-bold text-slate-900 dark:text-white">
+                      Join a Space
+                    </DialogTitle>
+                    <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                      Enter the space ID to join an existing space
+                    </p>
+                    <div className="flex flex-col gap-4 mt-6">
+                      <div className="relative">
+                        <Search
+                          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                          size={20}
+                        />
+                        <input
+                          type="text"
+                          className="w-full pl-12 pr-6 py-4 rounded-2xl border-2 border-slate-200/50 dark:border-white/10 bg-white/50 dark:bg-black/40 text-slate-900 dark:text-white placeholder-slate-400 focus:border-teal-500 focus:ring-0 transition-all outline-none"
+                          placeholder="Enter space ID"
+                          value={joinSpaceId}
+                          onChange={(e) => setJoinSpaceId(e.target.value)}
+                          disabled={isJoining}
+                        />
+                      </div>
+                      <button
+                        disabled={joinSpaceId === "" || isJoining}
+                        onClick={handleJoinSpace}
+                        className="w-full font-bold py-4 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white shadow-xl shadow-teal-500/20 transition-all transform hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wide text-sm"
+                      >
+                        {isJoining ? "Joining..." : "Join Space"}
+                      </button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+
+                {/* Create Space Dialog */}
+                <CreateSpaceDialog
+                  maps={maps}
+                  onCreateSpace={createSpace}
+                  isCreating={isCreating}
+                  error={spaceError}
+                  successMessage={successMessage}
+                  resetMessages={resetMessages}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Spaces Grid */}
           <SpacesLayout
             spaces={spaces}
             recentSpaces={recentSpaces}
