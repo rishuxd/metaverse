@@ -12,16 +12,16 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import axios from "axios";
 
 const SpacesSkeleton = () => (
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
     {[1, 2, 3].map((i) => (
       <div
         key={i}
-        className="backdrop-blur-xl bg-white/40 dark:bg-black/40 border-2 border-white/50 dark:border-white/10 rounded-[2rem] overflow-hidden"
+        className="backdrop-blur-md bg-white/40 dark:bg-white/5 border border-white/50 dark:border-white/10 rounded-2xl overflow-hidden"
       >
         <Skeleton className="aspect-video w-full" />
-        <div className="p-5 space-y-3">
-          <Skeleton className="h-5 w-32" />
-          <Skeleton className="h-4 w-24" />
+        <div className="p-4 space-y-2">
+          <Skeleton className="h-4 w-28" />
+          <Skeleton className="h-3 w-20" />
         </div>
       </div>
     ))}
@@ -78,62 +78,61 @@ const MySpace = ({ title, spaces, token, router, msg, onSpaceDeleted }) => {
   };
 
   return (
-    <section className="space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-teal-100 dark:bg-teal-900/30 rounded-xl flex items-center justify-center">
-          <Grid3X3 className="text-teal-500" size={20} />
+    <section className="space-y-4">
+      <div className="flex items-center gap-2">
+        <div className="w-8 h-8 bg-gradient-to-br from-teal-400 to-teal-600 rounded-lg flex items-center justify-center shadow-md shadow-teal-500/20">
+          <Grid3X3 className="text-white" size={16} />
         </div>
-        <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
           {title}
         </h2>
       </div>
 
       {spaces?.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {spaces.map((space) => (
             <div
               key={space?.id}
-              className="backdrop-blur-xl bg-white/40 dark:bg-black/40 border-2 border-white/50 dark:border-white/10 rounded-[2rem] overflow-hidden cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-teal-500/10 group"
+              className="backdrop-blur-md bg-white/50 dark:bg-white/5 border border-white/60 dark:border-white/10 rounded-2xl overflow-hidden cursor-pointer transition-all duration-200 hover:shadow-lg hover:shadow-indigo-500/10 hover:border-indigo-300/50 dark:hover:border-indigo-500/30 group"
               onClick={() => router.push(`/space/${space?.id}`)}
             >
-              <div className="relative aspect-video bg-black overflow-hidden">
+              <div className="relative aspect-video bg-slate-900 overflow-hidden">
                 <img
                   src={`${process.env.NEXT_PUBLIC_BASE_URL}${space?.map?.imageUrl}`}
                   alt={space?.name}
                   width={space?.map?.width * 16}
                   height={space?.map?.height * 16}
-                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
-              <div className="p-5 space-y-3">
-                <h3 className="font-bold text-slate-900 dark:text-white truncate">
+              <div className="p-4 space-y-2">
+                <h3 className="font-semibold text-slate-900 dark:text-white text-sm truncate">
                   {space?.name}
                 </h3>
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                    <Clock size={12} />
+                    <Clock size={11} />
                     {new Date(space?.createdAt).toLocaleDateString()}
                   </span>
                   <div className="flex items-center gap-1">
                     <button
                       onClick={(e) => handleCopyLink(space?.id, e)}
-                      className="p-2 rounded-xl backdrop-blur-md bg-white/50 dark:bg-black/50 border border-white/50 dark:border-white/10 hover:bg-teal-100 dark:hover:bg-teal-900/30 transition-all text-teal-600 dark:text-teal-400"
+                      className="p-1.5 rounded-lg bg-white/60 dark:bg-white/10 border border-white/50 dark:border-white/10 hover:bg-teal-100 dark:hover:bg-teal-900/30 transition-all text-teal-600 dark:text-teal-400"
                       title="Copy invite link"
                     >
                       {copiedId === space?.id ? (
-                        <Check size={14} />
+                        <Check size={13} />
                       ) : (
-                        <Share2 size={14} />
+                        <Share2 size={13} />
                       )}
                     </button>
                     <button
                       onClick={(e) => openDeleteDialog(space, e)}
                       disabled={deletingId === space?.id}
-                      className="p-2 rounded-xl backdrop-blur-md bg-white/50 dark:bg-black/50 border border-white/50 dark:border-white/10 hover:bg-red-100 dark:hover:bg-red-900/30 transition-all text-red-600 dark:text-red-400 disabled:opacity-50"
+                      className="p-1.5 rounded-lg bg-white/60 dark:bg-white/10 border border-white/50 dark:border-white/10 hover:bg-red-100 dark:hover:bg-red-900/30 transition-all text-red-500 dark:text-red-400 disabled:opacity-50"
                       title="Delete space"
                     >
-                      <Trash2 size={14} />
+                      <Trash2 size={13} />
                     </button>
                   </div>
                 </div>
@@ -142,44 +141,40 @@ const MySpace = ({ title, spaces, token, router, msg, onSpaceDeleted }) => {
           ))}
         </div>
       ) : (
-        <div className="backdrop-blur-xl bg-white/40 dark:bg-black/40 border-2 border-white/50 dark:border-white/10 rounded-[2rem] p-12 text-center">
-          <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <span className="text-4xl">🏠</span>
+        <div className="backdrop-blur-md bg-white/40 dark:bg-white/5 border border-white/50 dark:border-white/10 rounded-2xl p-10 text-center">
+          <div className="w-14 h-14 bg-slate-100 dark:bg-slate-800/50 rounded-xl flex items-center justify-center mx-auto mb-3">
+            <span className="text-3xl">🏠</span>
           </div>
-          <p className="text-slate-500 dark:text-slate-400">{msg}</p>
+          <p className="text-slate-500 dark:text-slate-400 text-sm">{msg}</p>
         </div>
       )}
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent className="backdrop-blur-xl bg-white/90 dark:bg-slate-900/90 border-2 border-white/50 dark:border-white/10 rounded-[2rem] p-8">
-          <DialogTitle className="text-xl font-bold text-slate-900 dark:text-white">
+        <DialogContent className="backdrop-blur-xl bg-white/95 dark:bg-slate-900/95 border border-white/50 dark:border-white/10 rounded-2xl p-6">
+          <DialogTitle className="text-lg font-bold text-slate-900 dark:text-white">
             Delete Space
           </DialogTitle>
-          <div className="mt-4">
-            <p className="text-slate-600 dark:text-slate-400">
-              Are you sure you want to delete{" "}
-              <span className="font-semibold text-slate-900 dark:text-white">
-                {spaceToDelete?.name}
-              </span>
-              ? This action cannot be undone.
-            </p>
-          </div>
-          <div className="flex gap-3 mt-6">
+          <p className="text-slate-500 dark:text-slate-400 text-sm mt-2">
+            Are you sure you want to delete{" "}
+            <span className="font-semibold text-slate-900 dark:text-white">
+              {spaceToDelete?.name}
+            </span>
+            ? This cannot be undone.
+          </p>
+          <div className="flex gap-2 mt-5">
             <button
               onClick={() => setDeleteDialogOpen(false)}
-              className="flex-1 py-4 rounded-2xl backdrop-blur-md bg-white/50 dark:bg-black/40 border-2 border-white/50 dark:border-white/10 text-slate-700 dark:text-white font-semibold hover:bg-white/70 dark:hover:bg-black/60 transition-all"
+              className="flex-1 py-2.5 rounded-xl bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white text-sm font-medium hover:bg-slate-200 dark:hover:bg-white/20 transition-all"
             >
               Cancel
             </button>
             <button
               onClick={handleDeleteSpace}
               disabled={deletingId === spaceToDelete?.id}
-              className="flex-1 py-4 rounded-2xl bg-red-600 text-white font-semibold hover:bg-red-700 transition-all shadow-lg shadow-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 py-2.5 rounded-xl bg-red-600 text-white text-sm font-medium hover:bg-red-700 transition-all shadow-lg shadow-red-500/20 disabled:opacity-50"
             >
-              {deletingId === spaceToDelete?.id
-                ? "Deleting..."
-                : "Delete Space"}
+              {deletingId === spaceToDelete?.id ? "Deleting..." : "Delete"}
             </button>
           </div>
         </DialogContent>
@@ -238,36 +233,35 @@ const RecentSpace = ({ title, spaces, token, router, msg, onSpaceLeft }) => {
   };
 
   return (
-    <section className="space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
-          <Clock className="text-blue-500" size={20} />
+    <section className="space-y-4">
+      <div className="flex items-center gap-2">
+        <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center shadow-md shadow-blue-500/20">
+          <Clock className="text-white" size={16} />
         </div>
-        <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
           {title}
         </h2>
       </div>
 
       {spaces?.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {spaces.map((space) => (
             <div
               key={space?.id}
-              className="backdrop-blur-xl bg-white/40 dark:bg-black/40 border-2 border-white/50 dark:border-white/10 rounded-[2rem] overflow-hidden cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-blue-500/10 group"
+              className="backdrop-blur-md bg-white/50 dark:bg-white/5 border border-white/60 dark:border-white/10 rounded-2xl overflow-hidden cursor-pointer transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/10 hover:border-blue-300/50 dark:hover:border-blue-500/30 group"
               onClick={() => router.push(`/space/${space?.space?.id}`)}
             >
-              <div className="relative aspect-video bg-black overflow-hidden">
+              <div className="relative aspect-video bg-slate-900 overflow-hidden">
                 <img
                   src={`${process.env.NEXT_PUBLIC_BASE_URL}${space?.space?.map?.imageUrl}`}
                   alt={space?.space?.name}
                   width={space?.space?.map?.width * 16}
                   height={space?.space?.map?.height * 16}
-                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
-              <div className="p-5 space-y-3">
-                <h3 className="font-bold text-slate-900 dark:text-white truncate">
+              <div className="p-4 space-y-2">
+                <h3 className="font-semibold text-slate-900 dark:text-white text-sm truncate">
                   {space?.space?.name}
                 </h3>
                 <div className="flex justify-between items-center">
@@ -275,30 +269,30 @@ const RecentSpace = ({ title, spaces, token, router, msg, onSpaceLeft }) => {
                     <span className="text-xs text-slate-500 dark:text-slate-400">
                       by {space?.space?.creator?.username || "Unknown"}
                     </span>
-                    <span className="text-xs text-slate-400 dark:text-slate-500 flex items-center gap-1">
-                      <Clock size={10} />
+                    <span className="text-[10px] text-slate-400 dark:text-slate-500 flex items-center gap-1">
+                      <Clock size={9} />
                       {new Date(space?.joinedAt).toLocaleDateString()}
                     </span>
                   </div>
                   <div className="flex items-center gap-1">
                     <button
                       onClick={(e) => handleCopyLink(space?.space?.id, e)}
-                      className="p-2 rounded-xl backdrop-blur-md bg-white/50 dark:bg-black/50 border border-white/50 dark:border-white/10 hover:bg-teal-100 dark:hover:bg-teal-900/30 transition-all text-teal-600 dark:text-teal-400"
+                      className="p-1.5 rounded-lg bg-white/60 dark:bg-white/10 border border-white/50 dark:border-white/10 hover:bg-teal-100 dark:hover:bg-teal-900/30 transition-all text-teal-600 dark:text-teal-400"
                       title="Copy invite link"
                     >
                       {copiedId === space?.space?.id ? (
-                        <Check size={14} />
+                        <Check size={13} />
                       ) : (
-                        <Share2 size={14} />
+                        <Share2 size={13} />
                       )}
                     </button>
                     <button
                       onClick={(e) => openLeaveDialog(space, e)}
                       disabled={leavingId === space?.space?.id}
-                      className="p-2 rounded-xl backdrop-blur-md bg-white/50 dark:bg-black/50 border border-white/50 dark:border-white/10 hover:bg-red-100 dark:hover:bg-red-900/30 transition-all text-red-600 dark:text-red-400 disabled:opacity-50"
+                      className="p-1.5 rounded-lg bg-white/60 dark:bg-white/10 border border-white/50 dark:border-white/10 hover:bg-red-100 dark:hover:bg-red-900/30 transition-all text-red-500 dark:text-red-400 disabled:opacity-50"
                       title="Leave space"
                     >
-                      <LeaveIcon size={14} />
+                      <LeaveIcon size={13} />
                     </button>
                   </div>
                 </div>
@@ -307,44 +301,40 @@ const RecentSpace = ({ title, spaces, token, router, msg, onSpaceLeft }) => {
           ))}
         </div>
       ) : (
-        <div className="backdrop-blur-xl bg-white/40 dark:bg-black/40 border-2 border-white/50 dark:border-white/10 rounded-[2rem] p-12 text-center">
-          <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <span className="text-4xl">🚀</span>
+        <div className="backdrop-blur-md bg-white/40 dark:bg-white/5 border border-white/50 dark:border-white/10 rounded-2xl p-10 text-center">
+          <div className="w-14 h-14 bg-slate-100 dark:bg-slate-800/50 rounded-xl flex items-center justify-center mx-auto mb-3">
+            <span className="text-3xl">🚀</span>
           </div>
-          <p className="text-slate-500 dark:text-slate-400">{msg}</p>
+          <p className="text-slate-500 dark:text-slate-400 text-sm">{msg}</p>
         </div>
       )}
 
       {/* Leave Confirmation Dialog */}
       <Dialog open={leaveDialogOpen} onOpenChange={setLeaveDialogOpen}>
-        <DialogContent className="backdrop-blur-xl bg-white/90 dark:bg-slate-900/90 border-2 border-white/50 dark:border-white/10 rounded-[2rem] p-8">
-          <DialogTitle className="text-xl font-bold text-slate-900 dark:text-white">
+        <DialogContent className="backdrop-blur-xl bg-white/95 dark:bg-slate-900/95 border border-white/50 dark:border-white/10 rounded-2xl p-6">
+          <DialogTitle className="text-lg font-bold text-slate-900 dark:text-white">
             Leave Space
           </DialogTitle>
-          <div className="mt-4">
-            <p className="text-slate-600 dark:text-slate-400">
-              Are you sure you want to leave{" "}
-              <span className="font-semibold text-slate-900 dark:text-white">
-                {spaceToLeave?.space?.name}
-              </span>
-              ?
-            </p>
-          </div>
-          <div className="flex gap-3 mt-6">
+          <p className="text-slate-500 dark:text-slate-400 text-sm mt-2">
+            Are you sure you want to leave{" "}
+            <span className="font-semibold text-slate-900 dark:text-white">
+              {spaceToLeave?.space?.name}
+            </span>
+            ?
+          </p>
+          <div className="flex gap-2 mt-5">
             <button
               onClick={() => setLeaveDialogOpen(false)}
-              className="flex-1 py-4 rounded-2xl backdrop-blur-md bg-white/50 dark:bg-black/40 border-2 border-white/50 dark:border-white/10 text-slate-700 dark:text-white font-semibold hover:bg-white/70 dark:hover:bg-black/60 transition-all"
+              className="flex-1 py-2.5 rounded-xl bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white text-sm font-medium hover:bg-slate-200 dark:hover:bg-white/20 transition-all"
             >
               Cancel
             </button>
             <button
               onClick={handleLeaveSpace}
               disabled={leavingId === spaceToLeave?.space?.id}
-              className="flex-1 py-4 rounded-2xl bg-red-600 text-white font-semibold hover:bg-red-700 transition-all shadow-lg shadow-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 py-2.5 rounded-xl bg-red-600 text-white text-sm font-medium hover:bg-red-700 transition-all shadow-lg shadow-red-500/20 disabled:opacity-50"
             >
-              {leavingId === spaceToLeave?.space?.id
-                ? "Leaving..."
-                : "Leave Space"}
+              {leavingId === spaceToLeave?.space?.id ? "Leaving..." : "Leave"}
             </button>
           </div>
         </DialogContent>
@@ -363,7 +353,7 @@ export default function SpacesLayout({
   onSpaceLeft,
 }) {
   return (
-    <div className="space-y-10">
+    <div className="space-y-8">
       {isLoading ? (
         <SpacesSkeleton />
       ) : (
