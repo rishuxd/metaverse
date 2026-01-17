@@ -1,25 +1,27 @@
 import React, { useState } from "react";
-import { Trash2, Share2, Check } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+  Trash2,
+  Share2,
+  Check,
+  Clock,
+  Grid3X3,
+  LogOut as LeaveIcon,
+} from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import axios from "axios";
 
 const SpacesSkeleton = () => (
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
     {[1, 2, 3].map((i) => (
-      <div key={i} className="flex flex-col space-y-3">
-        <Skeleton className="aspect-video w-full rounded-lg" />
-        <div className="flex justify-between items-center">
+      <div
+        key={i}
+        className="backdrop-blur-xl bg-white/40 dark:bg-black/40 border-2 border-white/50 dark:border-white/10 rounded-[2rem] overflow-hidden"
+      >
+        <Skeleton className="aspect-video w-full" />
+        <div className="p-5 space-y-3">
+          <Skeleton className="h-5 w-32" />
           <Skeleton className="h-4 w-24" />
-          <div className="flex gap-2 items-center">
-            <Skeleton className="h-4 w-16" />
-            <Skeleton className="h-4 w-4 rounded-full" />
-          </div>
         </div>
       </div>
     ))}
@@ -63,11 +65,8 @@ const MySpace = ({ title, spaces, token, router, msg, onSpaceDeleted }) => {
       );
 
       if (response.status === 200) {
-        // Close dialog
         setDeleteDialogOpen(false);
         setSpaceToDelete(null);
-
-        // Call the callback to refresh spaces
         onSpaceDeleted();
       }
     } catch (error) {
@@ -80,83 +79,103 @@ const MySpace = ({ title, spaces, token, router, msg, onSpaceDeleted }) => {
 
   return (
     <section className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 bg-teal-100 dark:bg-teal-900/30 rounded-xl flex items-center justify-center">
+          <Grid3X3 className="text-teal-500" size={20} />
+        </div>
+        <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+          {title}
+        </h2>
+      </div>
+
       {spaces?.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {spaces.map((space) => (
-            <div key={space?.id} className="flex flex-col">
-              <div
-                className="relative aspect-video bg-black rounded-lg shadow-lg overflow-hidden cursor-pointer transition-transform duration-200 hover:scale-105"
-                onClick={() => router.push(`/space/${space?.id}`)}
-              >
+            <div
+              key={space?.id}
+              className="backdrop-blur-xl bg-white/40 dark:bg-black/40 border-2 border-white/50 dark:border-white/10 rounded-[2rem] overflow-hidden cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-teal-500/10 group"
+              onClick={() => router.push(`/space/${space?.id}`)}
+            >
+              <div className="relative aspect-video bg-black overflow-hidden">
                 <img
                   src={`${process.env.NEXT_PUBLIC_BASE_URL}${space?.map?.imageUrl}`}
                   alt={space?.name}
                   width={space?.map?.width * 16}
                   height={space?.map?.height * 16}
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
-              <div className="flex justify-between items-center mt-3 px-1">
-                <h3 className="font-semibold text-sm truncate max-w-[70%]">
+              <div className="p-5 space-y-3">
+                <h3 className="font-bold text-slate-900 dark:text-white truncate">
                   {space?.name}
                 </h3>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs">
-                    {new Date(space?.createdAt).toDateString()}
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                    <Clock size={12} />
+                    {new Date(space?.createdAt).toLocaleDateString()}
                   </span>
-                  <button
-                    onClick={(e) => handleCopyLink(space?.id, e)}
-                    className="p-1 hover:bg-teal-100 rounded-full transition-colors text-teal-600 hover:text-teal-700"
-                    title="Copy invite link"
-                  >
-                    {copiedId === space?.id ? (
-                      <Check size={14} />
-                    ) : (
-                      <Share2 size={14} />
-                    )}
-                  </button>
-                  <button
-                    onClick={(e) => openDeleteDialog(space, e)}
-                    disabled={deletingId === space?.id}
-                    className="p-1 hover:bg-red-100 rounded-full transition-colors text-red-600 hover:text-red-700 disabled:opacity-50"
-                    title="Delete space"
-                  >
-                    <Trash2 size={14} />
-                  </button>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={(e) => handleCopyLink(space?.id, e)}
+                      className="p-2 rounded-xl backdrop-blur-md bg-white/50 dark:bg-black/50 border border-white/50 dark:border-white/10 hover:bg-teal-100 dark:hover:bg-teal-900/30 transition-all text-teal-600 dark:text-teal-400"
+                      title="Copy invite link"
+                    >
+                      {copiedId === space?.id ? (
+                        <Check size={14} />
+                      ) : (
+                        <Share2 size={14} />
+                      )}
+                    </button>
+                    <button
+                      onClick={(e) => openDeleteDialog(space, e)}
+                      disabled={deletingId === space?.id}
+                      className="p-2 rounded-xl backdrop-blur-md bg-white/50 dark:bg-black/50 border border-white/50 dark:border-white/10 hover:bg-red-100 dark:hover:bg-red-900/30 transition-all text-red-600 dark:text-red-400 disabled:opacity-50"
+                      title="Delete space"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           ))}
         </div>
       ) : (
-        <div className="flex items-center justify-center py-8 bg-fifth rounded-xl">
-          <p className="text-gray-400">{msg}</p>
+        <div className="backdrop-blur-xl bg-white/40 dark:bg-black/40 border-2 border-white/50 dark:border-white/10 rounded-[2rem] p-12 text-center">
+          <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <span className="text-4xl">🏠</span>
+          </div>
+          <p className="text-slate-500 dark:text-slate-400">{msg}</p>
         </div>
       )}
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent className="p-7">
-          <DialogTitle className="text-xl font-bold">Delete Space</DialogTitle>
+        <DialogContent className="backdrop-blur-xl bg-white/90 dark:bg-slate-900/90 border-2 border-white/50 dark:border-white/10 rounded-[2rem] p-8">
+          <DialogTitle className="text-xl font-bold text-slate-900 dark:text-white">
+            Delete Space
+          </DialogTitle>
           <div className="mt-4">
-            <p className="text-sm text-gray-600">
+            <p className="text-slate-600 dark:text-slate-400">
               Are you sure you want to delete{" "}
-              <span className="font-semibold">{spaceToDelete?.name}</span>? This
-              action cannot be undone.
+              <span className="font-semibold text-slate-900 dark:text-white">
+                {spaceToDelete?.name}
+              </span>
+              ? This action cannot be undone.
             </p>
           </div>
           <div className="flex gap-3 mt-6">
             <button
               onClick={() => setDeleteDialogOpen(false)}
-              className="flex-1 bg-gray-200 text-gray-800 rounded-xl py-3 font-semibold hover:bg-gray-300 transition-all"
+              className="flex-1 py-4 rounded-2xl backdrop-blur-md bg-white/50 dark:bg-black/40 border-2 border-white/50 dark:border-white/10 text-slate-700 dark:text-white font-semibold hover:bg-white/70 dark:hover:bg-black/60 transition-all"
             >
               Cancel
             </button>
             <button
               onClick={handleDeleteSpace}
               disabled={deletingId === spaceToDelete?.id}
-              className="flex-1 bg-red-600 text-white rounded-xl py-3 font-semibold hover:bg-red-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 py-4 rounded-2xl bg-red-600 text-white font-semibold hover:bg-red-700 transition-all shadow-lg shadow-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {deletingId === spaceToDelete?.id
                 ? "Deleting..."
@@ -206,11 +225,8 @@ const RecentSpace = ({ title, spaces, token, router, msg, onSpaceLeft }) => {
       );
 
       if (response.status === 200) {
-        // Close dialog
         setLeaveDialogOpen(false);
         setSpaceToLeave(null);
-
-        // Call the callback to refresh recent spaces
         onSpaceLeft();
       }
     } catch (error) {
@@ -223,32 +239,51 @@ const RecentSpace = ({ title, spaces, token, router, msg, onSpaceLeft }) => {
 
   return (
     <section className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
+          <Clock className="text-blue-500" size={20} />
+        </div>
+        <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+          {title}
+        </h2>
+      </div>
+
       {spaces?.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {spaces.map((space) => (
-            <div key={space?.id} className="flex flex-col">
-              <div
-                className="relative aspect-video bg-black rounded-lg shadow-lg overflow-hidden cursor-pointer transition-transform duration-200 hover:scale-105"
-                onClick={() => router.push(`/space/${space?.space?.id}`)}
-              >
+            <div
+              key={space?.id}
+              className="backdrop-blur-xl bg-white/40 dark:bg-black/40 border-2 border-white/50 dark:border-white/10 rounded-[2rem] overflow-hidden cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-blue-500/10 group"
+              onClick={() => router.push(`/space/${space?.space?.id}`)}
+            >
+              <div className="relative aspect-video bg-black overflow-hidden">
                 <img
                   src={`${process.env.NEXT_PUBLIC_BASE_URL}${space?.space?.map?.imageUrl}`}
                   alt={space?.space?.name}
                   width={space?.space?.map?.width * 16}
                   height={space?.space?.map?.height * 16}
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
-              <div className="mt-3 px-1 space-y-1">
+              <div className="p-5 space-y-3">
+                <h3 className="font-bold text-slate-900 dark:text-white truncate">
+                  {space?.space?.name}
+                </h3>
                 <div className="flex justify-between items-center">
-                  <h3 className="font-semibold text-sm truncate max-w-[60%]">
-                    {space?.space?.name}
-                  </h3>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-col">
+                    <span className="text-xs text-slate-500 dark:text-slate-400">
+                      by {space?.space?.creator?.username || "Unknown"}
+                    </span>
+                    <span className="text-xs text-slate-400 dark:text-slate-500 flex items-center gap-1">
+                      <Clock size={10} />
+                      {new Date(space?.joinedAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1">
                     <button
                       onClick={(e) => handleCopyLink(space?.space?.id, e)}
-                      className="p-1 hover:bg-teal-100 rounded-full transition-colors text-teal-600 hover:text-teal-700"
+                      className="p-2 rounded-xl backdrop-blur-md bg-white/50 dark:bg-black/50 border border-white/50 dark:border-white/10 hover:bg-teal-100 dark:hover:bg-teal-900/30 transition-all text-teal-600 dark:text-teal-400"
                       title="Copy invite link"
                     >
                       {copiedId === space?.space?.id ? (
@@ -260,49 +295,52 @@ const RecentSpace = ({ title, spaces, token, router, msg, onSpaceLeft }) => {
                     <button
                       onClick={(e) => openLeaveDialog(space, e)}
                       disabled={leavingId === space?.space?.id}
-                      className="p-1 hover:bg-red-100 rounded-full transition-colors text-red-600 hover:text-red-700 disabled:opacity-50"
+                      className="p-2 rounded-xl backdrop-blur-md bg-white/50 dark:bg-black/50 border border-white/50 dark:border-white/10 hover:bg-red-100 dark:hover:bg-red-900/30 transition-all text-red-600 dark:text-red-400 disabled:opacity-50"
                       title="Leave space"
                     >
-                      <Trash2 size={14} />
+                      <LeaveIcon size={14} />
                     </button>
                   </div>
-                </div>
-                <div className="flex justify-between items-center text-xs text-gray-500">
-                  <span>by {space?.space?.creator?.username || "Unknown"}</span>
-                  <span>{new Date(space?.joinedAt).toDateString()}</span>
                 </div>
               </div>
             </div>
           ))}
         </div>
       ) : (
-        <div className="flex items-center justify-center py-8 bg-fifth rounded-xl">
-          <p className="text-gray-400">{msg}</p>
+        <div className="backdrop-blur-xl bg-white/40 dark:bg-black/40 border-2 border-white/50 dark:border-white/10 rounded-[2rem] p-12 text-center">
+          <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <span className="text-4xl">🚀</span>
+          </div>
+          <p className="text-slate-500 dark:text-slate-400">{msg}</p>
         </div>
       )}
 
       {/* Leave Confirmation Dialog */}
       <Dialog open={leaveDialogOpen} onOpenChange={setLeaveDialogOpen}>
-        <DialogContent className="p-7">
-          <DialogTitle className="text-xl font-bold">Leave Space</DialogTitle>
+        <DialogContent className="backdrop-blur-xl bg-white/90 dark:bg-slate-900/90 border-2 border-white/50 dark:border-white/10 rounded-[2rem] p-8">
+          <DialogTitle className="text-xl font-bold text-slate-900 dark:text-white">
+            Leave Space
+          </DialogTitle>
           <div className="mt-4">
-            <p className="text-sm text-gray-600">
+            <p className="text-slate-600 dark:text-slate-400">
               Are you sure you want to leave{" "}
-              <span className="font-semibold">{spaceToLeave?.space?.name}</span>
+              <span className="font-semibold text-slate-900 dark:text-white">
+                {spaceToLeave?.space?.name}
+              </span>
               ?
             </p>
           </div>
           <div className="flex gap-3 mt-6">
             <button
               onClick={() => setLeaveDialogOpen(false)}
-              className="flex-1 bg-gray-200 text-gray-800 rounded-xl py-3 font-semibold hover:bg-gray-300 transition-all"
+              className="flex-1 py-4 rounded-2xl backdrop-blur-md bg-white/50 dark:bg-black/40 border-2 border-white/50 dark:border-white/10 text-slate-700 dark:text-white font-semibold hover:bg-white/70 dark:hover:bg-black/60 transition-all"
             >
               Cancel
             </button>
             <button
               onClick={handleLeaveSpace}
               disabled={leavingId === spaceToLeave?.space?.id}
-              className="flex-1 bg-red-600 text-white rounded-xl py-3 font-semibold hover:bg-red-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 py-4 rounded-2xl bg-red-600 text-white font-semibold hover:bg-red-700 transition-all shadow-lg shadow-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {leavingId === spaceToLeave?.space?.id
                 ? "Leaving..."
@@ -325,31 +363,29 @@ export default function SpacesLayout({
   onSpaceLeft,
 }) {
   return (
-    <main className="flex flex-col min-h-screen bg-first p-6 md:p-10">
-      <div className="max-w-7xl w-full mx-auto space-y-12">
-        {isLoading ? (
-          <SpacesSkeleton />
-        ) : (
-          <>
-            <RecentSpace
-              title="Recent Spaces"
-              spaces={recentSpaces}
-              token={token}
-              router={router}
-              msg="No recent joined spaces found!"
-              onSpaceLeft={onSpaceLeft}
-            />
-            <MySpace
-              title="My Spaces"
-              spaces={spaces}
-              token={token}
-              router={router}
-              msg="You have no spaces yet. Create one!"
-              onSpaceDeleted={onSpaceDeleted}
-            />
-          </>
-        )}
-      </div>
-    </main>
+    <div className="space-y-10">
+      {isLoading ? (
+        <SpacesSkeleton />
+      ) : (
+        <>
+          <RecentSpace
+            title="Recent Spaces"
+            spaces={recentSpaces}
+            token={token}
+            router={router}
+            msg="No recent joined spaces found!"
+            onSpaceLeft={onSpaceLeft}
+          />
+          <MySpace
+            title="My Spaces"
+            spaces={spaces}
+            token={token}
+            router={router}
+            msg="You have no spaces yet. Create one!"
+            onSpaceDeleted={onSpaceDeleted}
+          />
+        </>
+      )}
+    </div>
   );
 }
