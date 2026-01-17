@@ -88,26 +88,58 @@ const Dashboard = () => {
         }}
       />
 
-      {/* Background Elements - Subtle geometric shapes */}
+      {/* Background Elements */}
       <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
         <div
-          className="absolute inset-0 opacity-30"
+          className="absolute inset-0 opacity-50"
           style={{
             backgroundImage: "var(--auth-bg-overlay)",
             backgroundSize: "40px 40px",
           }}
         />
-        {/* Floating orbs */}
-        <div className="absolute top-[10%] left-[10%] w-64 h-64 bg-blue-400/20 dark:bg-blue-500/10 rounded-full blur-3xl" />
-        <div className="absolute top-[60%] right-[5%] w-96 h-96 bg-indigo-400/20 dark:bg-indigo-500/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-[10%] left-[20%] w-72 h-72 bg-violet-400/20 dark:bg-violet-500/10 rounded-full blur-3xl" />
-
-        {/* Decorative elements */}
-        <div className="absolute top-[15%] right-[15%] w-20 h-20 backdrop-blur-xl bg-white/30 dark:bg-white/5 border border-white/40 dark:border-white/10 rounded-2xl flex items-center justify-center opacity-60 rotate-12">
-          <span className="text-3xl select-none">🚀</span>
+        {/* Clouds */}
+        <span
+          className="absolute text-[240px] opacity-50 dark:opacity-30 top-[-40px] left-[5%] blur-sm select-none"
+          style={{ opacity: "var(--auth-cloud-opacity)" }}
+        >
+          ☁️
+        </span>
+        <span
+          className="absolute text-[300px] opacity-60 dark:opacity-40 top-20 right-[10%] blur-sm select-none"
+          style={{ opacity: "var(--auth-cloud-opacity)" }}
+        >
+          ☁️
+        </span>
+        <span
+          className="absolute text-[180px] opacity-45 dark:opacity-25 bottom-10 left-[15%] blur-md select-none"
+          style={{ opacity: "var(--auth-cloud-opacity)" }}
+        >
+          ☁️
+        </span>
+        {/* Green hills */}
+        <div className="absolute bg-green-500/20 dark:bg-green-500/10 rounded-[2rem] border-b-8 border-green-600/30 w-96 h-24 top-[15%] left-[5%] -rotate-2"></div>
+        <div className="absolute bg-green-500/20 dark:bg-green-500/10 rounded-[2rem] border-b-8 border-green-600/30 w-64 h-32 bottom-[10%] right-[10%] rotate-3"></div>
+        {/* Decorative icons */}
+        <div className="absolute top-[20%] left-[8%] w-24 h-24 backdrop-blur-xl bg-white/40 dark:bg-black/40 border border-white/50 dark:border-white/10 rounded-3xl flex items-center justify-center opacity-60">
+          <span className="text-5xl select-none">🌳</span>
         </div>
-        <div className="absolute bottom-[20%] left-[8%] w-16 h-16 backdrop-blur-xl bg-white/30 dark:bg-white/5 border border-white/40 dark:border-white/10 rounded-2xl flex items-center justify-center opacity-50 -rotate-6">
-          <span className="text-2xl select-none">✨</span>
+        <div className="absolute bottom-[15%] left-[5%] w-28 h-28 backdrop-blur-xl bg-white/40 dark:bg-black/40 border border-white/50 dark:border-white/10 rounded-[2rem] flex items-center justify-center opacity-60">
+          <span className="text-6xl select-none">🏠</span>
+        </div>
+        <div className="absolute top-1/2 left-[12%] w-16 h-16 backdrop-blur-xl bg-white/40 dark:bg-black/40 border border-white/50 dark:border-white/10 rounded-2xl flex items-center justify-center opacity-40">
+          <span className="text-3xl select-none">➕</span>
+        </div>
+        <div className="absolute bottom-[25%] right-[8%] w-24 h-24 backdrop-blur-xl bg-white/40 dark:bg-black/40 border border-white/50 dark:border-white/10 rounded-3xl flex items-center justify-center opacity-60">
+          <span className="text-5xl select-none">🌳</span>
+        </div>
+        <div className="absolute top-[18%] right-[12%] w-20 h-20 backdrop-blur-xl bg-white/40 dark:bg-black/40 border border-white/50 dark:border-white/10 rounded-2xl flex items-center justify-center opacity-50 rotate-12">
+          <span className="text-4xl select-none">🚀</span>
+        </div>
+        <div className="absolute bottom-[35%] left-[18%] w-16 h-16 backdrop-blur-xl bg-white/40 dark:bg-black/40 border border-white/50 dark:border-white/10 rounded-2xl flex items-center justify-center opacity-40 -rotate-6">
+          <span className="text-3xl select-none">✨</span>
+        </div>
+        <div className="absolute top-[40%] right-[6%] w-20 h-20 backdrop-blur-xl bg-white/40 dark:bg-black/40 border border-white/50 dark:border-white/10 rounded-3xl flex items-center justify-center opacity-50">
+          <span className="text-4xl select-none">🎮</span>
         </div>
       </div>
 
