@@ -96,13 +96,13 @@ const MySpace = ({ title, spaces, token, router, msg, onSpaceDeleted }) => {
               className="backdrop-blur-md bg-white/50 dark:bg-white/5 border border-white/60 dark:border-white/10 rounded-2xl overflow-hidden cursor-pointer transition-all duration-200 hover:shadow-lg hover:shadow-indigo-500/10 hover:border-indigo-300/50 dark:hover:border-indigo-500/30 group"
               onClick={() => router.push(`/space/${space?.id}`)}
             >
-              <div className="relative aspect-video bg-slate-900 overflow-hidden">
+              <div className="relative aspect-video bg-green-100 overflow-hidden">
                 <img
                   src={`${process.env.NEXT_PUBLIC_BASE_URL}${space?.map?.imageUrl}`}
                   alt={space?.name}
                   width={space?.map?.width * 16}
                   height={space?.map?.height * 16}
-                  className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
+                  className="h-full w-full object-contain transition-transform duration-200 group-hover:scale-105"
                 />
               </div>
               <div className="p-4 space-y-2">

@@ -172,7 +172,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
           </div>
           <div className="flex items-center gap-3">
             <a
-              href="https://twitter.com/rishuxd"
+              href="https://x.com/xd_rishu"
               target="_blank"
               rel="noopener noreferrer"
               className="text-slate-600 dark:text-slate-400 hover:text-teal-500 dark:hover:text-teal-400 transition-colors"
@@ -187,7 +187,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
               </svg>
             </a>
             <a
-              href="https://linkedin.com/in/rishuxd"
+              href="https://www.linkedin.com/in/jyotiswaroop-srivastava"
               target="_blank"
               rel="noopener noreferrer"
               className="text-slate-600 dark:text-slate-400 hover:text-teal-500 dark:hover:text-teal-400 transition-colors"
@@ -202,7 +202,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
               </svg>
             </a>
             <a
-              href="https://youtube.com/@rishuxd"
+              href="https://www.youtube.com/@pseudorishi"
               target="_blank"
               rel="noopener noreferrer"
               className="text-slate-600 dark:text-slate-400 hover:text-teal-500 dark:hover:text-teal-400 transition-colors"
@@ -232,7 +232,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
               </svg>
             </a>
             <a
-              href="https://leetcode.com/rishuxd"
+              href="https://leetcode.com/u/mrswaroop/"
               target="_blank"
               rel="noopener noreferrer"
               className="text-slate-600 dark:text-slate-400 hover:text-teal-500 dark:hover:text-teal-400 transition-colors"
